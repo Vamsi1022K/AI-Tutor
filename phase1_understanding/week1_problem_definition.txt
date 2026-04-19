@@ -1,0 +1,71 @@
+PROBLEM DEFINITION DOCUMENT
+============================
+Project Title  : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Subject        : Compiler Design (Sem 4)
+Date           : February 2026
+Prepared By    : [Your Name]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. BACKGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When a student writes a C program and compiles it using GCC (GNU Compiler 
+Collection), the compiler often outputs error messages that are technically 
+correct but extremely difficult for beginners to understand.
+
+Example:
+  Student writes:    int x = 5
+  GCC outputs:       main.c:4:5: error: expected ';' before 'printf'
+
+The student does not understand:
+  - What "expected ';'" means in the context of their code
+  - Where exactly the problem is
+  - What they should do to fix it safely
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PROBLEM STATEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GCC compiler error messages for C programs are highly technical, terse, and 
+lacking in context. Beginner programmers, particularly those in introductory 
+university courses, struggle to interpret these messages. This leads to:
+
+  (a) Increased frustration and loss of motivation
+  (b) Trial-and-error debugging, wasting significant time
+  (c) Adoption of insecure or incorrect fixes found online
+  (d) Poor understanding of secure coding practices
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. PROPOSED SOLUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Build an AI-based tool — the "Compiler AI Tutor" — that:
+
+  Step 1: Accepts a C source file from the student
+  Step 2: Compiles it using GCC and captures error output
+  Step 3: Parses each error message (file, line, column, message)
+  Step 4: Rewrites the error in plain English using a rule-based or 
+          AI-powered rewriting engine
+  Step 5: Suggests a safe, secure, and correct fix for each error
+  Step 6: Displays both the original error and the human-friendly 
+          rewritten explanation in a readable format
+
+Example Transformation:
+  BEFORE (GCC): main.c:4:5: error: expected ';' before 'printf'
+  AFTER (Tutor): "You forgot to put a semicolon (;) at the end of 
+                  the statement on line 4. In C, every statement 
+                  must end with a semicolon. Fix: int x = 5;"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. TARGET USERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Primary   : First and second year Computer Science students
+  Secondary : Self-taught beginner C programmers
+  Context   : Introductory programming and compiler design courses
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. KEY INNOVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Unlike existing tools (ChatGPT, Copilot), this tool:
+  - Works OFFLINE (no internet required)
+  - Is C-language SPECIFIC
+  - Integrates DIRECTLY with the GCC compilation pipeline
+  - Provides SECURE fix suggestions (avoids unsafe functions)
+  - Is LIGHTWEIGHT (Python + JSON dataset, no heavy model needed)

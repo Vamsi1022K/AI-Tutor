@@ -1,0 +1,174 @@
+AST CONTEXT EXAMPLES — ERROR TO CODE MAPPING
+=============================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 7
+Phase         : Phase 4 – Context Analysis and Dataset Preparation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DETAILED WORKED EXAMPLES — Code → AST → Error → Explanation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+════════════════════════════════════════════
+EXAMPLE 1: Missing Semicolon (E001)
+════════════════════════════════════════════
+Buggy Code:
+  int main() {
+      int x = 5        ← missing semicolon here
+      printf("%d", x);
+      return 0;
+  }
+
+AST (Attempted):
+  FunctionDecl: main
+  └── CompoundStmt
+       ├── DeclStmt [INCOMPLETE — no terminator found]
+       │    └── VarDecl: x = IntegerLiteral(5)
+       │         ...Parser reaches 'printf' without seeing ';'
+       └── [ERROR RAISED HERE]
+
+GCC Error Produced:
+  main.c:4:5: error: expected ';' before 'printf'
+
+What GCC Means:
+  The parser was building DeclStmt for "int x = 5" and expected
+  a semicolon to close it, but found 'printf' token instead.
+
+AI Tutor Explanation:
+  "You forgot a semicolon (;) after 'int x = 5'.
+   Every statement in C must end with a semicolon."
+
+Corrected Code:
+  int x = 5;   ← semicolon added
+
+════════════════════════════════════════════
+EXAMPLE 2: Undeclared Variable (E002)
+════════════════════════════════════════════
+Buggy Code:
+  int main() {
+      printf("%d\n", y);   ← y never declared
+      return 0;
+  }
+
+AST (Attempted):
+  FunctionDecl: main
+  └── CompoundStmt
+       ├── ExprStmt
+       │    └── CallExpr: printf
+       │         ├── StringLiteral: "%d\n"
+       │         └── DeclRefExpr: 'y'
+       │              └── [SYMBOL LOOKUP FAILED — y not in scope]
+       └── ReturnStmt → IntegerLiteral(0)
+
+GCC Error Produced:
+  main.c:4:20: error: 'y' undeclared (first use in this function)
+
+What GCC Means:
+  During semantic analysis, the symbol table has no entry for 'y'
+  in the current function scope or global scope.
+
+AI Tutor Explanation:
+  "You are using a variable 'y' that was never declared.
+   Declare it before using it: int y = 0;"
+
+Corrected Code:
+  int y = 0;
+  printf("%d\n", y);
+
+════════════════════════════════════════════
+EXAMPLE 3: Type Mismatch (E003)
+════════════════════════════════════════════
+Buggy Code:
+  int main() {
+      int x;
+      x = "hello";   ← int = string: type mismatch
+      return 0;
+  }
+
+AST (Attempted):
+  FunctionDecl: main
+  └── CompoundStmt
+       ├── DeclStmt → VarDecl: x (type: int)
+       ├── ExprStmt
+       │    └── BinaryOperator: '='
+       │         ├── DeclRefExpr: x → type: int
+       │         └── StringLiteral: "hello" → type: char*
+       │              └── [TYPE CHECKER: int ≠ char* → ERROR]
+       └── ReturnStmt
+
+GCC Error Produced:
+  main.c:5:7: error: incompatible types when assigning to
+  type 'int' from type 'char *'
+
+What GCC Means:
+  The BinaryOperator '=' requires both sides to have compatible types.
+  Left side is int, right side is char*. These are incompatible.
+
+AI Tutor Explanation:
+  "You are trying to store text in an integer variable.
+   An int can only hold numbers.
+   Fix: use char* x; for text, or assign a number like x = 42;"
+
+════════════════════════════════════════════
+EXAMPLE 4: Void Function Returns Value (E010)
+════════════════════════════════════════════
+Buggy Code:
+  void greet() {
+      printf("Hello!\n");
+      return 42;   ← void cannot return a value
+  }
+
+AST (Attempted):
+  FunctionDecl: greet (return type: void)
+  └── CompoundStmt
+       ├── ExprStmt → CallExpr: printf
+       └── ReturnStmt
+            └── IntegerLiteral: 42
+                 └── [SEMANTIC CHECK: void function cannot return value → ERROR]
+
+GCC Error Produced:
+  main.c:6:12: error: return with a value, in function returning void
+
+What GCC Means:
+  The FunctionDecl declares return type as void.
+  But the ReturnStmt contains an expression (42).
+  Void means "no return value" — this contradicts the declaration.
+
+AI Tutor Explanation:
+  "Your function greet() is declared as void, meaning it returns nothing.
+   But you wrote 'return 42;' which tries to return a number.
+   Fix: Either use 'return;' (no value), or change the function
+   return type to 'int greet()' if it should return a number."
+
+════════════════════════════════════════════
+EXAMPLE 5: Format Mismatch (E011)
+════════════════════════════════════════════
+Buggy Code:
+  int main() {
+      double x = 3.14;
+      printf("%d\n", x);   ← %d expects int, x is double
+      return 0;
+  }
+
+AST (Attempted):
+  FunctionDecl: main
+  └── CompoundStmt
+       ├── DeclStmt → VarDecl: x (type: double) = 3.14
+       ├── ExprStmt
+       │    └── CallExpr: printf
+       │         ├── StringLiteral: "%d\n"   ← format says int
+       │         └── DeclRefExpr: x → type: double ← mismatch!
+       │              └── [FORMAT CHECKER: %d ≠ double → WARNING]
+       └── ReturnStmt
+
+GCC Warning Produced:
+  main.c:5:14: warning: format '%d' expects argument of type 'int'
+  but argument 2 has type 'double' [-Wformat=]
+
+What GCC Means:
+  The format string "%d" tells printf to expect an integer.
+  But the passed argument x has type double. These don't match.
+
+AI Tutor Explanation:
+  "You used %d in printf which is the format code for integers.
+   But x is a decimal number (double).
+   Fix: Use %f or %lf for decimal numbers: printf(\"%f\\n\", x);"

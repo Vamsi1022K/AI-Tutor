@@ -1,0 +1,120 @@
+SOFTWARE REQUIREMENT SPECIFICATION (SRS)
+==========================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 3
+Phase         : Phase 2 – Requirement Analysis and System Design
+Version       : 1.0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. INTRODUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.1 Purpose
+  This SRS document defines the functional and non-functional requirements
+  for the AI-Based Compiler Error Message Rewriting tool (AI Tutor).
+
+1.2 System Description
+  The AI Tutor is a command-line Python application that:
+  - Accepts a C source file as input
+  - Compiles it using GCC via subprocess
+  - Intercepts and parses GCC stderr error output
+  - Rewrites each error message in plain English using an annotated 
+    dataset and optional AI model
+  - Suggests a safe, secure fix for each error
+
+1.3 Intended Audience
+  - Computer Science students (Semester 1–4)
+  - Faculty members demonstrating compiler concepts
+  - Beginner C programmers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. FUNCTIONAL REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FR-01: File Input
+  The system SHALL accept a C source file path as a command-line argument.
+  Input: python rewriter.py <filename.c>
+  The file must have a .c extension.
+
+FR-02: GCC Compilation
+  The system SHALL invoke GCC to compile the input file.
+  Command used: gcc -Wall -Wextra <file> -o NUL (Windows) / /dev/null (Linux)
+  GCC's stderr output SHALL be captured fully.
+
+FR-03: Error Parsing
+  The system SHALL parse each line of GCC stderr output.
+  Each error shall be extracted into: file, line, column, type, message.
+  Pattern: <file>:<line>:<col>: <type>: <message>
+
+FR-04: Error Matching
+  The system SHALL match each parsed error to a dataset entry using
+  regular expression pattern matching.
+
+FR-05: Plain English Rewriting
+  The system SHALL output a beginner-friendly explanation for each error.
+  Explanation shall be in simple English (Grade 8 reading level).
+
+FR-06: Fix Suggestion
+  The system SHALL provide a concrete fix suggestion for each error.
+  The fix SHALL include example corrected code where applicable.
+
+FR-07: Secure Fix Enforcement
+  The system SHALL NOT suggest any of the following in fix outputs:
+  - gets() function
+  - scanf("%s") without width limit
+  - strcpy() without bounds
+  - Blind/forced type casting without explanation
+
+FR-08: Output Formatting
+  The system SHALL display output in a structured, readable format.
+  Each issue SHALL show: issue number, category, file+line, original 
+  error, explanation, fix suggestion, and security status.
+
+FR-09: Graceful No-Error Handling
+  If GCC reports no errors, the system SHALL display a success message.
+
+FR-10: Unknown Error Handling
+  If an error does not match any dataset entry, the system SHALL 
+  display the original GCC message with a generic guidance message.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. NON-FUNCTIONAL REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NFR-01: Clarity
+  Plain English explanations must use simple vocabulary.
+  Target: understandable by a student in their first programming course.
+
+NFR-02: Accuracy
+  All suggested fixes must compile successfully with GCC.
+  Fix accuracy target: 100% for dataset-matched errors.
+
+NFR-03: Performance
+  The system SHALL produce output within 3 seconds per compilation.
+  (GCC compilation typically takes < 1 second for small files)
+
+NFR-04: Portability
+  The system SHALL run on:
+  - Windows 10/11 (with Python 3.7+ and GCC/MinGW installed)
+  - Ubuntu/Debian Linux (with Python 3.7+ and GCC installed)
+  - macOS (with Python 3.7+ and GCC/XCode tools installed)
+
+NFR-05: Offline Operation
+  The system SHALL function fully without an internet connection.
+
+NFR-06: Maintainability
+  The dataset (annotated_errors.json) SHALL be easily updatable 
+  without modifying the Python source code.
+
+NFR-07: Usability
+  The system SHALL require no additional user training beyond knowing
+  how to run a Python script from the command line.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SYSTEM CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  - Target language: C only
+  - Compiler: GCC only
+  - Dataset limited to errors with known pattern matches
+  - No GUI; command-line interface only
+  - No training of AI models during runtime

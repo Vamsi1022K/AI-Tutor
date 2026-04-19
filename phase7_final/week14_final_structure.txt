@@ -1,0 +1,122 @@
+FINAL SYSTEM STRUCTURE AND INTEGRATION DOCUMENT
+================================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 14
+Phase         : Phase 7 – Documentation and Finalization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: COMPLETE FINAL FILE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+cd ag/
+│
+├── README.md                                    ← How to run, overview
+│
+├── phase1_understanding/                         ← WEEKS 1–2
+│   ├── week1_problem_definition.txt             ← Problem, solution, target users
+│   ├── week1_objectives_scope.txt               ← Objectives + scope boundaries
+│   ├── week1_understanding_report.txt           ← Compiler pipeline understanding
+│   ├── week2_literature_survey.txt              ← Papers + tools reviewed
+│   ├── week2_comparative_analysis.txt           ← GCC vs Clang vs AI Tutor
+│   └── week2_problem_gap.txt                    ← Identified research gap
+│
+├── phase2_design/                                ← WEEKS 3–4
+│   ├── week3_SRS.txt                            ← Functional + non-functional reqs
+│   ├── week3_security_risk.txt                  ← Risk analysis + mitigation rules
+│   ├── week4_architecture.txt                   ← System + DFD diagrams
+│   ├── week4_modules.txt                        ← All 6 module descriptions
+│   └── week4_tech_stack.txt                     ← Why Python/GCC/JSON/regex
+│
+├── phase3_error_analysis/                        ← WEEKS 5–6
+│   ├── week5_error_taxonomy.txt                 ← 5 categories, 15 error types
+│   ├── week5_representative_errors.txt          ← 10 errors with confusion ratings
+│   └── week6_error_collection_report.txt        ← GCC output per program
+│
+├── errors/                                       ← 10 INTENTIONAL C PROGRAMS
+│   ├── err_001_missing_semicolon.c              ← E001 Syntax
+│   ├── err_002_undeclared_variable.c            ← E002 Declaration
+│   ├── err_003_incompatible_types.c             ← E003 Type
+│   ├── err_004_implicit_declaration.c           ← E004 Declaration
+│   ├── err_005_missing_paren.c                  ← E005 Syntax
+│   ├── err_006_too_few_args.c                   ← E006 Syntax
+│   ├── err_007_redefinition.c                   ← E009 Declaration
+│   ├── err_008_void_return.c                    ← E010 Scope
+│   ├── err_009_format_mismatch.c               ← E011 Type
+│   └── err_010_missing_brace.c                 ← E015 Syntax
+│
+├── phase4_dataset/                               ← WEEKS 7–8
+│   ├── week7_context_mapping.txt               ← AST node → error mapping
+│   ├── week7_ast_examples.txt                  ← 5 worked AST examples
+│   ├── week8_dataset_notes.txt                 ← Annotation guidelines
+│   └── annotated_errors.json                   ← ★ CORE DATASET (10 entries)
+│
+├── phase5_ai_rewriting/                          ← WEEKS 9–10
+│   ├── week9_ai_model_design.txt               ← Rule-Based vs Transformer analysis
+│   ├── week9_io_schema.txt                     ← Input/output format specification
+│   ├── rewriter.py                             ← ★ MAIN AI TUTOR PROGRAM
+│   └── week10_sample_outputs.txt               ← Before/after for all 10 errors
+│
+├── phase6_evaluation/                            ← WEEKS 11–12
+│   ├── week11_security_report.txt              ← All 10 fixes security reviewed
+│   ├── week11_test_results.txt                 ← 13 test cases, 100% pass
+│   ├── week12_evaluation_report.txt            ← Scored comparison GCC vs AI Tutor
+│   └── week12_comparative_analysis.txt         ← Side-by-side message comparison
+│
+└── phase7_final/                                 ← WEEKS 13–14
+    ├── week13_project_report_outline.txt        ← Full 7-chapter report outline
+    ├── week13_workflow_documentation.txt        ← Workflow + design decisions
+    ├── week14_final_structure.txt               ← This file
+    └── run_all_tests.bat                        ← ★ WINDOWS DEMO SCRIPT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: INTEGRATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All modules integrated in rewriter.py:
+  ✅ Module 1: Input Layer (sys.argv, os.path.isfile)
+  ✅ Module 2: GCC Compilation (subprocess.run)
+  ✅ Module 3: Error Parser (regex, parse_gcc_output)
+  ✅ Module 4: AI Rewriter (find_matching_entry, rewrite_error)
+  ✅ Module 5: Secure Fix (embedded in dataset secure flag)
+  ✅ Module 6: Output Formatter (print_results)
+
+Dataset Integration:
+  ✅ annotated_errors.json loaded at startup via load_dataset()
+  ✅ Path resolves relative to rewriter.py (cross-platform)
+  ✅ All 10 entries accessible via DATASET["E001"] etc.
+
+Test Integration:
+  ✅ run_all_tests.bat tests all 10 error programs in sequence
+  ✅ Shows pass/fail count at the end
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: HOW TO PRESENT TO YOUR PROFESSOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For a 5-minute demo, show in this order:
+
+1. Show project folder structure — explain phases match weeks
+   → Open File Explorer showing phase1 through phase7 folders
+
+2. Open errors/err_001_missing_semicolon.c
+   → "This is an intentional bug — look at line 8, no semicolon"
+
+3. Run GCC directly first:
+   > gcc -Wall errors/err_001_missing_semicolon.c
+   → Show the cryptic error message students would normally see
+
+4. Run AI Tutor:
+   > python phase5_ai_rewriting/rewriter.py errors/err_001_missing_semicolon.c
+   → Show the friendly, structured, explained output
+
+5. Run the full demo:
+   > phase7_final\run_all_tests.bat
+   → Watch all 10 errors be processed and explained
+
+6. Open annotated_errors.json — show the dataset structure
+7. Open rewriter.py — show the 6-module pipeline briefly
+
+Talk points:
+  - "This works offline — no internet"
+  - "All fixes are security-validated — no gets(), no blind casts"
+  - "Adding a new error is easy — just add a JSON entry"

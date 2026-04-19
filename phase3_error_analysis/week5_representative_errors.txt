@@ -1,0 +1,143 @@
+REPRESENTATIVE COMPILER ERRORS LIST
+=====================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 5
+Phase         : Phase 3 – Language and Error Analysis
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MASTER LIST OF REPRESENTATIVE GCC ERROR MESSAGES FOR C
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each error below has:
+  ID       : Unique error identifier used throughout this project
+  Category : Error classification (from taxonomy Week 5)
+  GCC Msg  : Exact GCC error/warning text (partial match)
+  Severity : error / warning
+  File     : Intentional error file created in Week 6
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E001
+Category : Syntax
+GCC Msg  : error: expected ';' before 'printf'
+Severity : error
+Source   : err_001_missing_semicolon.c
+Cause    : Statement terminated without semicolon
+Student Confusion Level: HIGH (doesn't know what "token" means)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E002
+Category : Declaration
+GCC Msg  : error: 'y' undeclared (first use in this function)
+Severity : error
+Source   : err_002_undeclared_variable.c
+Cause    : Variable used without prior declaration
+Student Confusion Level: HIGH (what is "first use in this function"?)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E003
+Category : Type
+GCC Msg  : error: incompatible types when assigning to type 'int'
+Severity : error
+Source   : err_003_incompatible_types.c
+Cause    : Assigning a string literal to an integer variable
+Student Confusion Level: VERY HIGH (don't understand type system)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E004
+Category : Declaration
+GCC Msg  : warning: implicit declaration of function 'printf'
+Severity : warning
+Source   : err_004_implicit_declaration.c
+Cause    : #include <stdio.h> is missing
+Student Confusion Level: VERY HIGH ("implicit declaration" is cryptic)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E005
+Category : Syntax
+GCC Msg  : error: expected ')' before ';' token
+Severity : error
+Source   : err_005_missing_paren.c
+Cause    : Parenthesis opened but not closed in expression
+Student Confusion Level: MEDIUM (location clue helps somewhat)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E006
+Category : Syntax
+GCC Msg  : error: too few arguments to function 'add'
+Severity : error
+Source   : err_006_too_few_args.c
+Cause    : Function call missing required argument(s)
+Student Confusion Level: MEDIUM (message is clear but fix isn't)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E007
+Category : Syntax
+GCC Msg  : error: expected expression before ')' token
+Severity : error
+Source   : (covered via general test)
+Cause    : Empty expression where value is required
+Student Confusion Level: HIGH ("expression" is jargon)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E009
+Category : Declaration
+GCC Msg  : error: redefinition of 'x'
+Severity : error
+Source   : err_007_redefinition.c
+Cause    : Variable declared twice in same scope
+Student Confusion Level: MEDIUM (somewhat understandable)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E010
+Category : Scope
+GCC Msg  : error: return with a value, in function returning void
+Severity : error
+Source   : err_008_void_return.c
+Cause    : void function has return statement with a value
+Student Confusion Level: HIGH (don't understand void concept)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E011
+Category : Type
+GCC Msg  : warning: format '%d' expects argument of type 'int'
+           but argument 2 has type 'double'
+Severity : warning
+Source   : err_009_format_mismatch.c
+Cause    : printf format specifier mismatch with argument type
+Student Confusion Level: HIGH (don't know format specifiers)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ID: E015
+Category : Syntax
+GCC Msg  : error: expected '}' at end of input
+Severity : error
+Source   : err_010_missing_brace.c
+Cause    : Missing closing brace for function or block
+Student Confusion Level: MEDIUM (end of input is confusing)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY STATISTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total errors documented        : 10
+Syntax errors                  : 4  (E001, E005, E006, E015)
+Declaration errors             : 3  (E002, E004, E009)
+Type errors                    : 2  (E003, E011)
+Scope errors                   : 1  (E010)
+Errors rated VERY HIGH confusion: 2
+Errors rated HIGH confusion    : 5
+Errors rated MEDIUM confusion  : 3
+
+All 10 errors are implemented as C programs in errors/ directory
+All 10 errors have entries in the annotated dataset (dataset/annotated_errors.json)

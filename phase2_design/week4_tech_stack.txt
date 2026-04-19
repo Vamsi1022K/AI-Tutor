@@ -1,0 +1,96 @@
+TECHNOLOGY STACK JUSTIFICATION
+================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 4
+Phase         : Phase 2 – Requirement Analysis and System Design
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. TARGET LANGUAGE: C
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Justification:
+  ✅ Most widely taught language in Semester 1–2 of CS programs
+  ✅ GCC compiles C and provides well-structured, parseable error messages
+  ✅ C error patterns are finite, classifiable, and frequently recurring
+  ✅ Beginner C programmers represent the largest audience for this tool
+  ✅ C has well-known security pitfalls (gets, strcpy) — this tool can
+     specifically teach secure alternatives
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. COMPILER: GCC (GNU Compiler Collection)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Justification:
+  ✅ Industry-standard, free, and open-source
+  ✅ Available on all major platforms (Linux, Windows via MinGW, macOS)
+  ✅ Error output format is consistent and machine-readable:
+     <file>:<line>:<col>: <type>: <message>
+  ✅ -Wall -Wextra flags expose comprehensive set of warnings
+  ✅ Widely used in university teaching environments
+
+Alternatives Considered:
+  - Clang: Better error messages but less universal in teaching
+  - MSVC: Windows-only; error format is different
+  - TCC (Tiny C Compiler): Less common; fewer error types
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. AI MODULE LANGUAGE: Python 3
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Justification:
+  ✅ subprocess module: easy GCC process invocation
+  ✅ re module: powerful regular expressions for error parsing
+  ✅ json module: read/write dataset files without extra libraries
+  ✅ Rich NLP/ML ecosystem (transformers, nltk) available if needed
+  ✅ Cross-platform support (Windows, Linux, macOS)
+  ✅ Easy for students and faculty to inspect and modify
+
+Libraries Used:
+  - subprocess: Run GCC and capture output
+  - re: Regex parsing of GCC error lines
+  - json: Load/save annotated dataset
+  - sys, os: File handling and argument processing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. AI APPROACH: RULE-BASED + OPTIONAL TRANSFORMER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Primary: Rule-Based Pattern Matching
+  Justification:
+    ✅ Deterministic — always produces same output for same input
+    ✅ Fast — no model loading time
+    ✅ Accurate — human-written and human-verified explanations
+    ✅ Works fully offline
+    ✅ Easy to update by adding entries to JSON dataset
+    ✅ No GPU or heavy compute required
+
+Secondary (Optional): T5/Flan-T5 Transformer
+  Why T5?
+    ✅ Google's Text-to-Text Transfer Transformer — ideal for rewriting tasks
+    ✅ flan-t5-small is very lightweight (< 300MB)
+    ✅ Can generalize to error messages not in the dataset
+  Limitation:
+    - Requires transformers + torch libraries
+    - Adds startup time (model loading ~ 2-5 seconds)
+    - May produce incorrect explanations without fine-tuning
+  Usage: Fallback only — triggered when no dataset match is found
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. DATA STORAGE: JSON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Justification:
+  ✅ Human-readable — teachers and students can add entries easily
+  ✅ No database server required
+  ✅ Python's built-in json module handles it natively
+  ✅ Supports all required fields: id, category, error text, explanation,
+     fix, secure flag, example code
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TECHNOLOGY STACK SUMMARY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Component          | Technology         | Version
+-------------------|--------------------|----------
+Target Language    | C                  | C99/C11
+Compiler           | GCC                | 9.0+
+AI Module Language | Python             | 3.7+
+Primary AI Method  | Rule-Based (regex) | Built-in
+Secondary AI Method| Flan-T5 (optional) | huggingface/transformers
+Data Storage       | JSON               | Built-in (json module)
+Subprocess         | Python subprocess  | Built-in
+Platform           | Windows/Linux/macOS| Any

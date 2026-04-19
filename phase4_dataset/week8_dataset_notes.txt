@@ -1,0 +1,74 @@
+DATASET CREATION AND ANNOTATION NOTES
+=======================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 8
+Phase         : Phase 4 – Context Analysis and Dataset Preparation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: DATASET DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dataset File    : phase4_dataset/annotated_errors.json
+Format          : JSON Array (list of objects)
+Total Entries   : 10 (one per representative error from Week 5/6)
+
+Each dataset record contains the following fields:
+
+  Field           | Type    | Description
+  ----------------|---------|--------------------------------------------
+  id              | string  | Unique error identifier (E001, E002, ...)
+  category        | string  | Error classification (Syntax, Type, etc.)
+  gcc_error       | string  | Representative GCC error/warning message
+  plain_explanation| string | Beginner-friendly plain English explanation
+  example_code    | string  | Code snippet that triggers this error
+  fix             | string  | Plain language description of the fix
+  fixed_code      | string  | The corrected version of the example code
+  secure          | boolean | Whether the fix is security-safe (true/false)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: ANNOTATION GUIDELINES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Guideline 1: Plain Language
+  - No technical jargon (no "token", "lvalue", "AST node")
+  - Explain as if speaking to a student who knows basic C but
+    has never read compiler theory
+  - Keep sentences short (max 2 sentences per point)
+
+Guideline 2: Actionable Explanation
+  - Always say WHAT the student did wrong
+  - Always explain WHY it is wrong (briefly)
+  - Always provide HOW to fix it (exact code change)
+
+Guideline 3: Security Check (before marking secure: true)
+  - Does the fix use gets()? → REJECT, use fgets()
+  - Does the fix use strcpy()? → REJECT, use strncpy()
+  - Does the fix use scanf("%s") without width? → REJECT
+  - Does the fix introduce a blind cast? → REJECT, explain type properly
+  - If all checks pass → mark secure: true
+
+Guideline 4: Example Code
+  - Provide the minimal code snippet that triggers the error
+  - Show only the relevant lines, not the full program
+
+Guideline 5: GCC Error Field
+  - Use the CORE of the GCC message, without the file:line:col prefix
+  - This allows the AI Rewriter to match partial patterns
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: DATASET VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each entry was validated by:
+  Step 1: Triggering the exact GCC error using the example_code
+  Step 2: Applying the fix and verifying GCC no longer reports the error
+  Step 3: Checking that fix does not introduce any new warnings
+  Step 4: Human review of the plain_explanation for clarity
+  Step 5: Security review per the guidelines above
+
+Validation Result:
+  All 10 entries: ✅ Validated, ✅ Secure, ✅ Explanations reviewed
+
+Dataset is stored in : phase4_dataset/annotated_errors.json
+Used by              : phase5_ai_rewriting/rewriter.py (Module 4)
+Updated in           : Phase 5 (Week 10) if new patterns are found

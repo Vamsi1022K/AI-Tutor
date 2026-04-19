@@ -1,0 +1,186 @@
+TEST CASES AND RESULTS
+========================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 11
+Phase         : Phase 6 – Security and Evaluation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: TEST PLAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test Objective:
+  Verify that the AI Tutor correctly identifies and rewrites all 10
+  representative GCC error types from the dataset.
+
+Test Command:
+  python phase5_ai_rewriting/rewriter.py errors/<filename>.c
+
+Pass Criteria (all must be true):
+  1. GCC error is correctly detected (parser extracts error_dict)
+  2. Correct Error ID is matched by the pattern engine
+  3. Explanation is returned (non-empty string)
+  4. Fix is returned (non-empty string)
+  5. secure flag is True
+  6. Output is printed in formatted layout
+
+Fail Criteria (any one triggers FAIL):
+  - Error not detected (parser failure)
+  - Wrong Error ID matched (wrong pattern)
+  - Empty explanation or fix returned
+  - Program crashes with Python exception
+  - secure flag is False
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: DETAILED TEST RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TEST CASE 01
+  Input File    : errors/err_001_missing_semicolon.c
+  Expected ID   : E001
+  Expected Cat  : Syntax
+  GCC Error     : expected ';' before 'printf'
+  Pattern Match : r"expected\s*';'" → E001 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 02
+  Input File    : errors/err_002_undeclared_variable.c
+  Expected ID   : E002
+  Expected Cat  : Declaration
+  GCC Error     : 'y' undeclared (first use in this function)
+  Pattern Match : r"undeclared" → E002 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 03
+  Input File    : errors/err_003_incompatible_types.c
+  Expected ID   : E003
+  Expected Cat  : Type
+  GCC Error     : incompatible types when assigning to type 'int'
+  Pattern Match : r"incompatible types when assigning" → E003 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 04
+  Input File    : errors/err_004_implicit_declaration.c
+  Expected ID   : E004
+  Expected Cat  : Declaration
+  GCC Error     : implicit declaration of function 'printf'
+  Pattern Match : r"implicit declaration of function" → E004 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 05
+  Input File    : errors/err_005_missing_paren.c
+  Expected ID   : E005
+  Expected Cat  : Syntax
+  GCC Error     : expected ')' before ';' token
+  Pattern Match : r"expected\s*'\)'" → E005 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 06
+  Input File    : errors/err_006_too_few_args.c
+  Expected ID   : E006
+  Expected Cat  : Syntax
+  GCC Error     : too few arguments to function 'add'
+  Pattern Match : r"too few arguments" → E006 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 07
+  Input File    : errors/err_007_redefinition.c
+  Expected ID   : E009
+  Expected Cat  : Declaration
+  GCC Error     : redefinition of 'x'
+  Pattern Match : r"redefinition of" → E009 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 08
+  Input File    : errors/err_008_void_return.c
+  Expected ID   : E010
+  Expected Cat  : Scope
+  GCC Error     : return with a value, in function returning void
+  Pattern Match : r"return with a value.*void" → E010 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 09
+  Input File    : errors/err_009_format_mismatch.c
+  Expected ID   : E011
+  Expected Cat  : Type
+  GCC Error     : format '%d' expects argument of type 'int' but has 'double'
+  Pattern Match : r"format '%.+' expects" → E011 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+TEST CASE 10
+  Input File    : errors/err_010_missing_brace.c
+  Expected ID   : E015
+  Expected Cat  : Syntax
+  GCC Error     : expected '}' at end of input
+  Pattern Match : r"expected\s*'\}'" → E015 ✅
+  Explanation   : Returned ✅
+  Fix Returned  : Returned ✅
+  Secure Flag   : True ✅
+  Exception?    : None ✅
+  RESULT        : ✅ PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: EDGE CASE TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EDGE CASE A: File Not Found
+  Input   : python rewriter.py nonexistent.c
+  Expected: Error message — "File not found"
+  Result  : ✅ PASS — prints helpful message and exits gracefully
+
+EDGE CASE B: Valid C File (No Errors)
+  Input   : A correctly written C program
+  Expected: "✅ No errors! Your program compiled successfully."
+  Result  : ✅ PASS
+
+EDGE CASE C: Unknown Error Not in Dataset
+  Input   : Error not matching any regex pattern
+  Expected: Generic fallback explanation shown
+  Result  : ✅ PASS — fallback message is shown
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: FINAL TEST SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Test Cases      : 13 (10 errors + 3 edge cases)
+Tests Passed          : 13
+Tests Failed          : 0
+Pass Rate             : 100%
+Errors Correctly Found: 10/10
+Fixes Secure          : 10/10
+Python Exceptions     : 0

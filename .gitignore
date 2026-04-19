@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.exe
+.history/
+.vscode/
+tmp/
+models/
+raw_gcc_output.json

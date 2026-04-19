@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Compiler Tutor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0d0d0f;
+    --bg2:     #13131a;
+    --bg3:     #1a1a24;
+    --bg4:     #20202d;
+    --border:  #2a2a3a;
+    --text:    #e2e2ee;
+    --sub:     #7a7a9a;
+    --red:     #f85149;
+    --red-bg:  rgba(248,81,73,0.08);
+    --yellow:  #f0c040;
+    --yel-bg:  rgba(240,192,64,0.08);
+    --green:   #3fb950;
+    --grn-bg:  rgba(63,185,80,0.08);
+    --blue:    #58a6ff;
+    --gray:    #484f58;
+    --gray-bg: rgba(72,79,88,0.1);
+    --code:    #c9d1d9;
+    --lineno:  #3d3d52;
+    --tab-active: #58a6ff;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 56px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo-text {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    color: #e2e2ee;
+  }
+  .logo-sub { font-size: 11px; font-weight: 600; color: var(--sub); margin-left: auto; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    gap: 4px;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px; font-weight: 500;
+    color: var(--sub);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* ── Main layout ── */
+  .main { display: flex; flex: 1; height: calc(100vh - 97px); overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 280px; min-width: 250px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow-y: auto; padding: 24px 20px; gap: 32px;
+  }
+  .sidebar-section h3 {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text); margin-bottom: 12px;
+  }
+  .sidebar-section p {
+    font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 16px;
+  }
+  .sidebar-section ul { list-style: none; }
+  .sidebar-section li {
+    font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 10px;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .sidebar-section li::before {
+    content: "•"; color: var(--blue); font-weight: bold; font-size: 18px; line-height: 1;
+  }
+
+  /* ── Modal (Load Demo) ── */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 1000;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    width: 600px; max-width: 90%; max-height: 80vh;
+    border-radius: 12px; display: flex; flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-body { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .demo-grid-item {
+    padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; font-family: 'Fira Code', monospace; font-size: 12px;
+    color: var(--sub); cursor: pointer; transition: all 0.2s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .demo-grid-item:hover { border-color: var(--blue); color: var(--text); background: var(--bg4); }
+
+  /* ── Content area ── */
+  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Tab panels ── */
+  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .panel.active { display: flex; }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    padding: 10px 16px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .btn {
+    padding: 7px 16px; border-radius: 6px; border: none;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--blue); color: #0d0d0f; }
+  .btn-primary:hover { background: #79baff; }
+  .btn-red    { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .btn-red:hover { background: rgba(248,81,73,0.25); }
+  .btn-ghost  { background: var(--bg3); color: var(--sub); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--sub); }
+  .file-name  { font-family: 'Fira Code', monospace; font-size: 12px; color: var(--sub); margin-left: auto; }
+
+  /* ── Split view (editor + results) ── */
+  .split { display: flex; flex: 1; overflow: hidden; }
+  .editor-pane {
+    width: 45%; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .results-pane { flex: 1; overflow-y: auto; background: var(--bg); }
+
+  /* ── Code editor ── */
+  .code-header {
+    padding: 8px 12px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; color: var(--sub);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .lang-badge {
+    background: var(--bg4); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 8px;
+    font-family: 'Fira Code', monospace; font-size: 10px; color: var(--blue);
+  }
+  .code-container {
+    flex: 1; display: flex; overflow: hidden;
+    background: #0d1117; font-family: 'Fira Code', monospace; font-size: 13px;
+  }
+  .line-numbers {
+    padding: 12px 0; min-width: 48px; text-align: right;
+    color: var(--lineno); background: #0d1117;
+    border-right: 1px solid var(--border);
+    user-select: none; overflow: hidden; line-height: 1.6;
+  }
+  .line-num {
+    padding: 0 12px 0 8px;
+    display: block;
+    font-size: 12px;
+  }
+  .line-num.error-line { color: var(--red); background: rgba(248,81,73,0.12); }
+  .code-area { flex: 1; overflow: auto; position: relative; }
+  .code-lines { padding: 12px 16px; line-height: 1.6; }
+  .code-line { display: block; white-space: pre; min-height: 1.6em; }
+  .code-line.error-line {
+    background: rgba(248,81,73,0.1);
+    border-left: 3px solid var(--red);
+    padding-left: 13px;
+    color: #ff8080;
+  }
+  .code-textarea {
+    width: 100%; height: 100%; resize: none;
+    background: #0d1117; color: var(--code);
+    font-family: 'Fira Code', monospace; font-size: 13px; line-height: 1.6;
+    border: none; outline: none; padding: 12px 16px; tab-size: 4;
+  }
+
+  /* ── Results area ── */
+  .results-inner { padding: 16px; display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
+
+  /* ── Status banner ── */
+  .status-banner {
+    border-radius: 8px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px; font-weight: 600;
+  }
+  .status-ok    { background: var(--grn-bg); border: 1px solid rgba(63,185,80,0.25); color: var(--green); }
+  .status-error { background: var(--red-bg); border: 1px solid rgba(248,81,73,0.25); color: var(--red); }
+  .status-idle  { background: var(--bg2); border: 1px solid var(--border); color: var(--sub); }
+
+  /* ── Error header (red, like the screenshot) ── */
+  .error-header {
+    background: var(--red-bg);
+    border: 1px solid rgba(248,81,73,0.2);
+    border-left: 4px solid var(--red);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-family: 'Fira Code', monospace; font-size: 13px; color: var(--red);
+    font-weight: 600;
+  }
+
+  /* ── Cards ── */
+  .card {
+    border-radius: 0 8px 8px 0;
+    overflow: hidden;
+  }
+  .card-inner {
+    padding: 14px 18px;
+    border-top-right-radius: 8px; border-bottom-right-radius: 8px;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .card-body { font-size: 13px; color: var(--text); line-height: 1.65; }
+
+  /* Card variants */
+  .card-diag .card-inner { background: var(--yel-bg); border: 1px solid rgba(240,192,64,0.2); }
+  .card-diag { border-left: 4px solid var(--yellow); }
+  .card-diag .card-title { color: var(--yellow); }
+
+  .card-fix .card-inner { background: var(--grn-bg); border: 1px solid rgba(63,185,80,0.2); }
+  .card-fix { border-left: 4px solid var(--green); }
+  .card-fix .card-title { color: var(--green); }
+
+  .card-raw .card-inner { background: var(--gray-bg); border: 1px solid rgba(72,79,88,0.3); }
+  .card-raw { border-left: 4px solid var(--gray); }
+  .card-raw .card-title { color: #8b949e; cursor: pointer; user-select: none; }
+
+  /* ── Code block inside card ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px; color: var(--yellow);
+    white-space: pre-wrap; word-break: break-word;
+    line-height: 1.6;
+  }
+  .code-block.raw { color: #8b949e; }
+
+  /* ── Divider ── */
+  .issue-divider {
+    text-align: center; color: var(--border);
+    font-size: 11px; color: var(--sub);
+    padding: 4px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  /* ── Security tab ── */
+  .sec-issue {
+    background: var(--red-bg);
+    border: 1px solid rgba(248,81,73,0.2);
+    border-left: 4px solid var(--red);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+  }
+  .sec-line { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--sub); margin-bottom: 6px; }
+  .sec-reason { font-size: 13px; font-weight: 600; color: var(--red); margin-bottom: 6px; }
+  .sec-fix { font-size: 12px; color: var(--green); font-family: 'Fira Code', monospace; }
+  .sec-ok {
+    background: var(--grn-bg); border: 1px solid rgba(63,185,80,0.25);
+    border-radius: 8px; padding: 20px; text-align: center;
+    color: var(--green); font-size: 15px; font-weight: 600;
+  }
+
+  /* ── Evaluate tab ── */
+  .eval-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .eval-table th {
+    text-align: left; padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--sub); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .eval-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .eval-table tr:hover td { background: var(--bg3); }
+  .bar { display: inline-block; height: 6px; border-radius: 3px; vertical-align: middle; }
+  .bar-gcc { background: var(--red); }
+  .bar-ai  { background: var(--green); }
+  .score-gcc { color: var(--red); font-weight: 600; }
+  .score-ai  { color: var(--green); font-weight: 600; }
+  .eval-summary {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 24px; display: flex; gap: 32px; align-items: center;
+  }
+  .eval-stat { text-align: center; }
+  .eval-stat-val { font-size: 28px; font-weight: 700; }
+  .eval-stat-lbl { font-size: 11px; color: var(--sub); margin-top: 4px; }
+
+  /* ── AST tab ── */
+  .ast-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 5px 12px; border-radius: 4px;
+    font-family: 'Fira Code', monospace; font-size: 12px;
+    border-left: 3px solid transparent;
+  }
+  .ast-row:hover { background: var(--bg3); }
+  .ast-lno { color: var(--lineno); width: 36px; text-align: right; flex-shrink: 0; }
+  .ast-node { width: 190px; flex-shrink: 0; }
+  .ast-code { color: var(--code); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .node-IncludeDirective { color: #c586c0; }
+  .node-FunctionDecl     { color: var(--blue); }
+  .node-VarDecl          { color: #9cdcfe; }
+  .node-ReturnStmt       { color: #c586c0; }
+  .node-IfStmt, .node-ForStmt, .node-WhileStmt { color: #569cd6; }
+  .node-CallExpr         { color: #dcdcaa; }
+  .ast-row.keyword       { border-left-color: #569cd6; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--sub); }
+
+  /* ── Spinner ── */
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--border);
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: none;
+  }
+  .spinner.active { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── About tab ── */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .about-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .about-card h3 { color: var(--blue); font-size: 14px; margin-bottom: 12px; }
+  .about-card p, .about-card li { font-size: 13px; color: var(--sub); line-height: 1.7; }
+  .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { font-size: 13px; color: var(--sub); }
+  .metric-val { font-size: 13px; font-weight: 600; color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <span class="logo-text">AI Compiler Tutor</span>
+  <span class="logo-sub">Compiler Design Project · NIT Warangal</span>
+</header>
+
+<!-- ── Tabs ── -->
+<div class="tabs">
+  <div class="tab active" data-tab="analyzer">Analyzer</div>
+  <div class="tab" data-tab="security">Security</div>
+  <div class="tab" data-tab="ast">AST View</div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>Project Overview</h3>
+      <p>This environment is engineered to bridge the gap between cryptic compiler feedback and developer understanding. By intercepting the GCC error pipeline, it delivers precise, human-readable insights for faster debugging.</p>
+    </div>
+    
+    <div class="sidebar-section">
+      <h3>🧠 AI Engine Status</h3>
+      <ul>
+        <li style="color: var(--green); font-weight: bold;">Status: Active & Online</li>
+        <li>Model: Google Flan-T5 (Neural Inference)</li>
+        <li>Location: Local Execution (No Colab)</li>
+        <li>Training Size: 11,550 Custom Pairs</li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Diagnostic Capabilities</h3>
+      <ul>
+        <li>Structural Syntax Validation</li>
+        <li>Symbol Scope & Declaration Analysis</li>
+        <li>Memory Management Safeguards</li>
+        <li>Buffer Integrity Monitoring</li>
+        <li>Logical Control Flow Verification</li>
+        <li>Pointer Lifetime & Safety Checks</li>
+        <li>Runtime Cycle Detection</li>
+      </ul>
+    </div>
+    <div style="margin-top:auto; font-size:11px; color:var(--sub); opacity: 0.5;">
+      Focus: C Code + Static Security Analysis
+    </div>
+  </div>
+
+  <!-- ── Content ── -->
+  <div class="content">
+
+    <!-- ═══ ANALYZER TAB ═══ -->
+    <div class="panel active" id="panel-analyzer">
+      <div class="toolbar">
+        <button class="btn btn-red" onclick="runAnalyze()" style="padding: 10px 24px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Analyse Code
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('localFilePicker').click()">Upload File</button>
+        <button class="btn btn-ghost" onclick="openDemoModal()">Load Demo</button>
+        <button class="btn btn-ghost" onclick="createNewFile()">New File</button>
+        <button class="btn btn-ghost" onclick="clearResults()">Clear Output</button>
+        <div class="spinner" id="spinner"></div>
+        <span class="file-name current-file-display">No file selected</span>
+      </div>
+      <input type="file" id="localFilePicker" style="display:none" accept=".c,.h" onchange="handleLocalUpload(this)">
+
+      <div class="split">
+        <!-- Editor -->
+        <div class="editor-pane">
+          <div class="code-header">
+            <span class="lang-badge">C</span>
+            <span style="flex:1" id="editorFileName">editor</span>
+            <span style="font-size:11px;color:var(--sub)">Edit or paste code</span>
+          </div>
+          <div class="code-container">
+            <div class="line-numbers" id="lineNumbers"></div>
+            <div class="code-area">
+              <textarea class="code-textarea" id="codeEditor"
+                spellcheck="false"
+                placeholder="// Paste your C code here or click a file on the left..."
+                oninput="updateLineNumbers()"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-pane">
+          <div class="results-inner" id="analyzerResults">
+            <div class="status-banner status-idle">
+              <span>Input C code and click Analyse Code to begin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SECURITY TAB ═══ -->
+    <div class="panel" id="panel-security">
+      <div class="toolbar">
+        <button class="btn btn-red" onclick="runSecurity()">
+          Scan for Vulnerabilities
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('localFilePicker').click()">Upload File</button>
+        <button class="btn btn-ghost" onclick="openDemoModal()">Load Demo</button>
+        <div class="spinner" id="secSpinner"></div>
+        <span class="file-name current-file-display" style="margin-left: 20px;">No file selected</span>
+        <span style="font-size:12px;color:var(--sub);margin-left:auto">
+          Checks: gets · strcpy · scanf("%s") · sprintf · strcat · system · malloc · free
+        </span>
+      </div>
+      <div style="flex:1;overflow-y:auto;">
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px" id="secResults">
+          <div class="status-banner status-idle">
+            <span>Select a file from the toolbar then click Scan</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ═══ AST TAB ═══ -->
+    <div class="panel" id="panel-ast">
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="runAst()">Parse AST</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('localFilePicker').click()">Upload File</button>
+        <button class="btn btn-ghost" onclick="openDemoModal()">Load Demo</button>
+        <div class="spinner" id="astSpinner"></div>
+        <span class="file-name current-file-display" style="margin-left: auto;">No file selected</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px" id="astResults">
+        <div class="status-banner status-idle">
+          <span>Select a file and click Parse AST</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── Modals ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeDemoModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div style="font-weight:700">Select a Demo Example</div>
+      <button class="btn btn-ghost" onclick="closeDemoModal()" style="padding:4px 10px">&times;</button>
+    </div>
+    <div class="modal-body" id="modalFileList">
+      <!-- Demo files injected here -->
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+const demoFiles = [];
+
+// ── Tab switching ──────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Modals JS ──────────────────────────────────────────────────
+function openDemoModal() {
+  document.getElementById('modalOverlay').style.display = 'flex';
+  renderModalFiles();
+}
+function closeDemoModal(e) {
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+function renderModalFiles() {
+  const container = document.getElementById('modalFileList');
+  container.innerHTML = '';
+  demoFiles.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'demo-grid-item';
+    div.textContent = f;
+    div.onclick = () => { loadFile(f); closeDemoModal(); };
+    container.appendChild(div);
+  });
+}
+
+// ── Load file list ─────────────────────────────────────────────
+async function loadFiles() {
+  try {
+    const r = await fetch('/api/files');
+    const files = await r.json();
+    demoFiles.length = 0;
+    demoFiles.push(...files);
+  } catch(e) { console.error('Failed to load demo files', e); }
+}
+
+async function loadFile(name) {
+  const r = await fetch('/api/file/' + name);
+  const d = await r.json();
+  document.getElementById('codeEditor').value = d.content;
+  document.querySelectorAll('.current-file-display').forEach(el => el.textContent = name);
+  document.getElementById('editorFileName').textContent = name;
+  updateLineNumbers();
+  clearResults();
+}
+
+// ── Line numbers ───────────────────────────────────────────────
+function updateLineNumbers() {
+  const ta = document.getElementById('codeEditor');
+  const lines = ta.value.split('\n');
+  const lno = document.getElementById('lineNumbers');
+  lno.innerHTML = lines.map((_, i) =>
+    `<span class="line-num">${i+1}</span>`
+  ).join('');
+}
+
+// ── Analyze ────────────────────────────────────────────────────
+async function runAnalyze() {
+  const code = document.getElementById('codeEditor').value.trim();
+  if (!code) { showStatus('analyzerResults', 'error', '⚠️ Please paste or load some C code first.'); return; }
+  setSpinner('spinner', true);
+  clearResults();
+
+  try {
+    const r = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({code})
+    });
+    const d = await r.json();
+    renderAnalyzerResults(d, code);
+  } catch(e) {
+    showStatus('analyzerResults', 'error', '❌ Server error: ' + e.message);
+  } finally {
+    setSpinner('spinner', false);
+  }
+}
+
+function renderAnalyzerResults(d, code) {
+  const el = document.getElementById('analyzerResults');
+  el.innerHTML = '';
+  const lines = code.split('\n');
+
+  if (d.count === 0) {
+    el.innerHTML = `
+      <div class="status-banner status-ok">
+        <div>
+          <div>Success — compiled successfully!</div>
+          <div style="font-size:12px;font-weight:400;margin-top:3px;opacity:0.8">Your code is clean.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Error count banner
+  el.innerHTML = `
+    <div class="status-banner status-error">
+      <div>
+        <div>Found ${d.count} issue${d.count>1?'s':''}</div>
+        <div style="font-size:12px;font-weight:400;margin-top:3px;opacity:0.8">
+          ${d.count>1 ? 'Fix Issue #1 first — it often causes the rest.' : 'See details below.'}
+        </div>
+      </div>
+    </div>`;
+
+  d.errors.forEach((err, i) => {
+    // Error header
+    el.innerHTML += `
+      <div class="error-header">
+        ${err.type === 'error' ? 'Error' : 'Warning'} at line ${err.line}
+        ${err.error_id ? `<span style="opacity:.6;font-weight:400;font-size:11px;margin-left:8px">[${err.error_id}]</span>` : ''}
+        <div style="font-weight:400;font-size:12px;margin-top:6px;color:#ffa0a0">${escHtml(err.gcc_msg)}</div>
+      </div>`;
+
+    // Tutor Insights card
+    if (err.explanation) {
+      el.innerHTML += `
+        <div class="card card-diag">
+          <div class="card-inner">
+            <div class="card-title">Diagnostic Insight</div>
+            <div class="card-body">${escHtml(err.explanation)}</div>
+          </div>
+        </div>`;
+    }
+
+    // Neural Model Feedback (The "Main Motto")
+    if (err.ai_logic) {
+      el.innerHTML += `
+        <div class="card card-diag" style="border-left-color: #6366f1;">
+          <div class="card-inner">
+            <div class="card-title" style="color: #818cf8;">Neural Model Analysis</div>
+            <div class="card-body" style="font-style: italic; color: #e2e8f0;">"${escHtml(err.ai_logic)}"</div>
+          </div>
+        </div>`;
+    }
+
+    // Suggested Fix card
+    if (err.fix) {
+      // Cleaner fix rendering without robotic 'Change/To' if possible
+      const cleanFix = err.fix.replace(/Change:.*To:.*$/s, '').trim();
+      
+      el.innerHTML += `
+        <div class="card card-fix">
+          <div class="card-inner">
+            <div class="card-title">Recommendations</div>
+            <div class="card-body">${escHtml(cleanFix)}</div>
+            ${err.fix_code ? `<div class="code-block">${escHtml(err.fix_code)}</div>` : ''}
+          </div>
+        </div>`;
+    }
+
+    // Raw GCC output
+    el.innerHTML += `
+      <div class="card card-raw">
+        <div class="card-inner">
+          <div class="card-title" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+            View Raw Log (click to toggle)
+          </div>
+          <div class="code-block raw" style="display:none">${escHtml(err.raw)}</div>
+        </div>
+      </div>`;
+
+    if (i < d.errors.length - 1) {
+      el.innerHTML += `<div class="issue-divider">── Issue ${i+2} ──</div>`;
+    }
+  });
+}
+
+// ── Security ───────────────────────────────────────────────────
+async function runSecurity() {
+  const code = document.getElementById('codeEditor').value.trim();
+  if (!code) { alert('Load a file first from the sidebar.'); return; }
+  setSpinner('secSpinner', true);
+  const el = document.getElementById('secResults');
+  el.innerHTML = '';
+
+  try {
+    const r = await fetch('/api/security', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({code})
+    });
+    const d = await r.json();
+
+    if (d.count === 0) {
+      el.innerHTML = `<div class="sec-ok">No security vulnerabilities detected.</div>`;
+    } else {
+      el.innerHTML = `
+        <div class="status-banner status-error">
+          <div>${d.count} security concern${d.count>1?'s':''} identified</div>
+        </div>`;
+      d.issues.forEach(iss => {
+        el.innerHTML += `
+          <div class="sec-issue">
+            <div class="sec-line">Line ${iss.line}: <code>${escHtml(iss.code)}</code></div>
+            <div class="sec-reason">${escHtml(iss.reason)}</div>
+            <div class="sec-fix">Recommended: ${escHtml(iss.fix)}</div>
+          </div>`;
+      });
+    }
+  } catch(e) {
+    el.innerHTML = `<div class="status-banner status-error">Server error: ${e.message}</div>`;
+  } finally { setSpinner('secSpinner', false); }
+}
+
+// ── Evaluate ───────────────────────────────────────────────────
+async function runEvaluate() {
+  const el = document.getElementById('evalResults');
+  el.innerHTML = '<div class="status-banner status-idle"><span>⏳</span><span>Running…</span></div>';
+  const r = await fetch('/api/evaluate');
+  const d = await r.json();
+
+  let rows = d.scores.map(s => {
+    const gw = Math.round(s.gcc / 5 * 80);
+    const aw = Math.round(s.ai  / 5 * 80);
+    return `<tr>
+      <td style="font-family:'Fira Code',monospace;font-weight:600">${s.id}</td>
+      <td style="color:var(--sub)">${s.cat}</td>
+      <td><span class="score-gcc">${s.gcc.toFixed(2)}</span></td>
+      <td><span class="bar bar-gcc" style="width:${gw}px"></span></td>
+      <td><span class="score-ai">${s.ai.toFixed(2)}</span></td>
+      <td><span class="bar bar-ai" style="width:${aw}px"></span></td>
+      <td style="color:var(--green);font-weight:600">+${s.delta.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="eval-summary">
+      <div class="eval-stat">
+        <div class="eval-stat-val" style="color:var(--red)">${d.avg_gcc.toFixed(2)}</div>
+        <div class="eval-stat-lbl">GCC Average / 5</div>
+      </div>
+      <div style="font-size:28px;color:var(--sub)">→</div>
+      <div class="eval-stat">
+        <div class="eval-stat-val" style="color:var(--green)">${d.avg_ai.toFixed(2)}</div>
+        <div class="eval-stat-lbl">AI Tutor Average / 5</div>
+      </div>
+      <div style="margin-left:auto;text-align:center">
+        <div class="eval-stat-val" style="color:var(--yellow)">${d.improvement_pct}%</div>
+        <div class="eval-stat-lbl">Overall Improvement</div>
+      </div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <table class="eval-table">
+        <thead><tr>
+          <th>ID</th><th>Category</th>
+          <th colspan="2">GCC Score</th>
+          <th colspan="2">AI Score</th>
+          <th>Delta</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── AST ────────────────────────────────────────────────────────
+async function runAst() {
+  const code = document.getElementById('codeEditor').value.trim();
+  if (!code) { alert('Load a file first.'); return; }
+  setSpinner('astSpinner', true);
+  const el = document.getElementById('astResults');
+  el.innerHTML = '';
+
+  const r = await fetch('/api/ast', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({code})
+  });
+  const d = await r.json();
+  setSpinner('astSpinner', false);
+
+  const nodeClass = node => 'node-' + node.replace(/\[.*\]/, '').replace(/\//g,'');
+
+  el.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-family:'Fira Code',monospace">
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:11px;color:var(--sub);display:flex;gap:24px">
+        <span style="width:36px">Line</span>
+        <span style="width:190px">AST Node Type</span>
+        <span>Source Code</span>
+      </div>
+      <div style="padding:6px 0">
+        ${d.nodes.map(n => `
+          <div class="ast-row">
+            <span class="ast-lno">${n.line}</span>
+            <span class="ast-node ${nodeClass(n.node)}">${escHtml(n.node)}</span>
+            <span class="ast-code">${escHtml(n.code.trim())}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function escHtml(s) {
+  if(!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setSpinner(id, on) { document.getElementById(id).classList.toggle('active', on); }
+function showStatus(elId, type, msg) {
+  document.getElementById(elId).innerHTML =
+    `<div class="status-banner status-${type}"><span>${msg}</span></div>`;
+}
+function clearResults() {
+  document.getElementById('analyzerResults').innerHTML =
+    `<div class="status-banner status-idle"><span>System cleared. Ready for next analysis.</span></div>`;
+}
+
+function createNewFile() {
+  document.getElementById('codeEditor').value = '';
+  document.querySelectorAll('.current-file-display').forEach(el => el.textContent = 'Untitled.c');
+  document.getElementById('editorFileName').textContent = 'scratchpad';
+  document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+  updateLineNumbers();
+  clearResults();
+}
+
+function handleLocalUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('codeEditor').value = e.target.result;
+    document.querySelectorAll('.current-file-display').forEach(el => el.textContent = file.name);
+    document.getElementById('editorFileName').textContent = file.name;
+    document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+    updateLineNumbers();
+    clearResults();
+  };
+  reader.readAsText(file);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+updateLineNumbers();
+loadFiles();
+</script>
+</body>
+</html>

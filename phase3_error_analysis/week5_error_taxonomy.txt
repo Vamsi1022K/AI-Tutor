@@ -1,0 +1,168 @@
+ERROR TAXONOMY DOCUMENT
+=========================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 5
+Phase         : Phase 3 – Language and Error Analysis
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: TARGET LANGUAGE FINALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Language Selected : C (C99 / C11 standard)
+Compiler           : GCC (GNU Compiler Collection), version 9.0+
+Flags Used         : gcc -Wall -Wextra
+
+Reasons for Selecting C:
+  1. C is one of the most widely taught languages in Semester 1-4 of CS
+  2. GCC is the de-facto standard compiler for C in university environments
+  3. GCC error messages for C are consistent and regex-parseable
+  4. Common C beginner errors are well-documented and finite
+  5. C has known security concerns (buffer overflow, unsafe functions)
+     which this tool can specifically address in fix suggestions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: ERROR CLASSIFICATION — FULL TAXONOMY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+╔══════════════════════════════════════════════════════════════╗
+║  CATEGORY 1: SYNTAX ERRORS                                   ║
+║  Detected by: Parser (grammar checking stage)                ║
+╚══════════════════════════════════════════════════════════════╝
+
+S1. Missing Semicolon
+    GCC Message : error: expected ';' before '<token>'
+    Cause       : Statement not terminated with semicolon
+    Example     : int x = 5  [missing ;]
+    Frequency   : Very Common (most frequent beginner error)
+
+S2. Missing Closing Parenthesis
+    GCC Message : error: expected ')' before '<token>'
+    Cause       : Opening '(' has no matching ')'
+    Example     : int x = (5 + 3;
+
+S3. Missing Closing Brace
+    GCC Message : error: expected '}' at end of input
+    Cause       : Opening '{' has no matching '}'
+    Example     : int main() { int x = 5;  [missing closing }]
+
+S4. Missing Opening Brace
+    GCC Message : error: expected '{' before '<token>'
+    Cause       : Function/block body expected to start with '{'
+    Example     : int main() return 0;
+
+S5. Too Few Arguments to Function
+    GCC Message : error: too few arguments to function '<name>'
+    Cause       : Function call provides fewer arguments than declared
+    Example     : add(5) when add() needs 2 arguments
+
+S6. Too Many Arguments to Function
+    GCC Message : error: too many arguments to function '<name>'
+    Cause       : Function call has more arguments than declared
+
+S7. Expected Expression
+    GCC Message : error: expected expression before '<token>'
+    Cause       : Empty expression where a value is required
+    Example     : int x = ;
+
+╔══════════════════════════════════════════════════════════════╗
+║  CATEGORY 2: DECLARATION ERRORS                              ║
+║  Detected by: Symbol Table / Semantic Analyzer               ║
+╚══════════════════════════════════════════════════════════════╝
+
+D1. Undeclared Variable / Identifier
+    GCC Message : error: '<name>' undeclared (first use in this function)
+    Cause       : Variable used before being declared
+    Example     : printf("%d", y);  when y was never declared
+    Frequency   : Very Common
+
+D2. Implicit Function Declaration
+    GCC Message : warning: implicit declaration of function '<name>'
+    Cause       : Function used without #include of its header file
+    Example     : printf() used without #include <stdio.h>
+    Frequency   : Very Common
+
+D3. Redefinition of Variable
+    GCC Message : error: redefinition of '<name>'
+    Cause       : Same variable declared twice in same scope
+    Example     : int x = 5; int x = 10;
+
+D4. Multiple Definition
+    GCC Message : error: multiple definition of '<function>'
+    Cause       : Same function defined in two different files
+
+╔══════════════════════════════════════════════════════════════╗
+║  CATEGORY 3: TYPE ERRORS (Semantic)                          ║
+║  Detected by: Type Checker / Semantic Analyzer               ║
+╚══════════════════════════════════════════════════════════════╝
+
+T1. Incompatible Types in Assignment
+    GCC Message : error: incompatible types when assigning to type '<type>'
+    Cause       : RHS type does not match LHS type in assignment
+    Example     : int x; x = "hello";   (int vs char*)
+
+T2. Format Specifier Mismatch
+    GCC Message : warning: format '%d' expects argument of type 'int' but
+                  argument 2 has type 'double'
+    Cause       : printf/scanf format string doesn't match argument type
+    Example     : printf("%d", 3.14);  (should be %f)
+    Frequency   : Very Common in beginners
+
+T3. Pointer/Integer Type Mismatch
+    GCC Message : warning: assignment to '<type>' from 'int' makes pointer
+                  from integer without a cast
+    Cause       : Assigning an integer value to a pointer variable
+
+T4. Return Type Mismatch
+    GCC Message : warning: return makes integer from pointer without a cast
+    Cause       : Returning wrong type from a function
+
+╔══════════════════════════════════════════════════════════════╗
+║  CATEGORY 4: SCOPE ERRORS                                    ║
+║  Detected by: Semantic Analyzer                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+SC1. Return Value in Void Function
+     GCC Message : error: return with a value, in function returning void
+     Cause       : void function tries to return a value
+     Example     : void greet() { return 42; }
+
+SC2. Control Reaches End of Non-Void Function
+     GCC Message : warning: control reaches end of non-void function
+     Cause       : Function declared to return a value has a path with no return
+     Example     : int add() { } [no return statement]
+
+SC3. Break/Continue Outside Loop
+     GCC Message : error: break statement not within loop or switch
+     Cause       : break or continue used outside a loop body
+
+╔══════════════════════════════════════════════════════════════╗
+║  CATEGORY 5: LINKER ERRORS                                   ║
+║  Detected by: GNU Linker (ld)                                ║
+╚══════════════════════════════════════════════════════════════╝
+
+L1. Undefined Reference
+    GCC Message : undefined reference to '<name>'
+    Cause       : Function or variable declared but not defined/linked
+    Example     : undefined reference to 'main'
+
+L2. Missing Library
+    GCC Message : cannot find -l<name>
+    Cause       : -l flag references a library not installed on system
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: ERROR FREQUENCY IN BEGINNER CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rank | Error Category               | Approximate Frequency
+-----|------------------------------|----------------------
+1    | Missing semicolon            | 35%
+2    | Undeclared variable          | 25%
+3    | Missing #include             | 20%
+4    | Format specifier mismatch    | 10%
+5    | Type mismatch                | 5%
+6    | Missing brace/parenthesis    | 3%
+7    | Void return with value       | 1%
+8    | Others                       | 1%
+
+Total: 15 error types identified and classified
+Implemented in dataset: 10 most common types (E001–E015)

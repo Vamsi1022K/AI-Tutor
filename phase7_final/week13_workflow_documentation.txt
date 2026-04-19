@@ -1,0 +1,136 @@
+SYSTEM WORKFLOW DOCUMENTATION
+================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 13
+Phase         : Phase 7 – Documentation and Finalization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: COMPLETE SYSTEM WORKFLOW (Step by Step)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: Student Runs the Tutor
+  Command: python phase5_ai_rewriting/rewriter.py errors/err_001_missing_semicolon.c
+  What happens: Python script starts, dataset loads from annotated_errors.json
+
+STEP 2: Input Validation
+  Code: if not os.path.isfile(input_file): print("File not found")
+  What happens:
+    - Script checks the file argument exists
+    - If file missing: prints helpful error and exits cleanly
+    - If file found: passes path to GCC module
+
+STEP 3: GCC Compilation
+  Code: subprocess.run(['gcc', '-Wall', '-Wextra', filepath, '-o', 'NUL'], ...)
+  What happens:
+    - Python calls GCC as a subprocess (safe — no shell=True)
+    - GCC compiles the C file
+    - All error/warning messages go to stderr
+    - Python captures stderr as a string
+
+  Example capture:
+    "err_001_missing_semicolon.c:8:5: error: expected ';' before 'printf'\n"
+
+STEP 4: Error Parsing
+  Code: parse_gcc_output(gcc_stderr)
+  What happens:
+    - Splits the stderr string into individual lines
+    - Applies regex: r'^(?P<file>[^:]+):(?P<line>\d+):(?P<col>\d+):\s*(?P<type>...):\s*(?P<msg>.+)$'
+    - Each matching line becomes a Python dictionary
+    - 'note' lines (continuation notes) are filtered out
+
+  Parsed result:
+    {'file': 'err_001_missing_semicolon.c', 'line': 8, 'col': 5,
+     'type': 'error', 'msg': "expected ';' before 'printf'", 'raw': '...'}
+
+STEP 5: Pattern Matching (AI Rewriting)
+  Code: find_matching_entry(msg)
+  What happens:
+    - Takes the 'msg' field from the parsed dict
+    - Tests each regex pattern in ERROR_PATTERNS in order
+    - First match returns the corresponding Error ID
+    - The Error ID is looked up in the DATASET dictionary
+
+  Example:
+    msg = "expected ';' before 'printf'"
+    Pattern r"expected\s*';'" → matches → Error ID = "E001"
+    DATASET["E001"] = {explanation: "...", fix: "...", secure: True}
+
+STEP 6: Explanation Generation
+  Code: rewrite_error(error_dict)
+  What happens:
+    - Assembles the final result dictionary
+    - Combines: file, line, category, explanation, fix, secure
+    - If no pattern matched: uses generic fallback explanation
+
+STEP 7: Secure Fix Validation
+  Already embedded in dataset (secure: true/false per entry)
+  The dataset was pre-validated in Week 11 (security review)
+  At runtime: the system simply reads the 'secure' flag from the entry
+
+STEP 8: Output Formatting
+  Code: print_results(rewritten_errors, source_file)
+  What happens:
+    - Prints header with issue count
+    - For each error: shows issue number, category, file+line,
+      original GCC error, explanation, fix, security badge
+    - At end: tip about fixing errors top-to-bottom
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: DESIGN DECISIONS AND RATIONALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Decision 1: Why JSON Dataset Instead of Database?
+  - JSON is human-readable — faculty can add entries easily
+  - No database server required (sqlite, mysql)
+  - Python's built-in json module handles it natively
+  - Enables sharing dataset as a single file
+
+Decision 2: Why Rule-Based First, Not Transformer First?
+  - Rule-based is deterministic: same error → same explanation every time
+  - Transformers can hallucinate, especially for technical code content
+  - With only 10 training examples, a Transformer would not generalize
+  - Rule-based is instantly available, no model download needed
+
+Decision 3: Why subprocess.run(list) Not shell=True?
+  Security: shell=True passes the command to the OS shell, allowing
+  injection attacks if user controls any part of the command string.
+  List-form subprocess prevents this entirely.
+
+Decision 4: Why Filter 'note' Lines?
+  GCC 'note' lines are continuation messages (e.g., "previous definition
+  was here") that would confuse beginners if shown without context.
+  The main 'error'/'warning' line already contains the essential info.
+
+Decision 5: Why Sort Specific Patterns Before General Ones?
+  Example: "incompatible types" must match before "types" (if we had it)
+  Regex matching stops at first match — so specific patterns MUST come
+  before more general patterns in the ERROR_PATTERNS list.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: HOW TO EXTEND THE SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To add a new error to the system (no code changes needed):
+
+Step 1: Write a C program that triggers the new error
+  Save it in errors/ folder
+
+Step 2: Compile and note the GCC output
+  gcc -Wall -Wextra filename.c -o NUL
+
+Step 3: Add a new entry to annotated_errors.json:
+  {
+    "id": "E020",
+    "category": "Scope",
+    "gcc_error": "passing 'const ...' discards 'const' qualifier",
+    "plain_explanation": "You are passing a constant value to a function ...",
+    "example_code": "...",
+    "fix": "...",
+    "fixed_code": "...",
+    "secure": true
+  }
+
+Step 4: Add the regex pattern to ERROR_PATTERNS in rewriter.py:
+  (re.compile(r"discards.*const.*qualifier", re.IGNORECASE), "E020"),
+
+That's all — the system picks it up automatically on next run.

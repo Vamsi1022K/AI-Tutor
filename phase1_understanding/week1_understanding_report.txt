@@ -1,0 +1,92 @@
+INITIAL UNDERSTANDING REPORT
+==============================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 1
+Phase         : Phase 1 – Problem Understanding and Foundations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART 1: COMPILER PIPELINE UNDERSTANDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The compiler processes source code through these stages:
+
+  SOURCE CODE (.c file)
+        │
+        ▼
+  ┌─────────────┐
+  │  LEXER      │  Breaks code into tokens (keywords, identifiers,
+  │             │  operators, literals, punctuation)
+  └──────┬──────┘
+         │  Token stream
+         ▼
+  ┌─────────────┐
+  │  PARSER     │  Checks grammar rules, builds Abstract Syntax Tree
+  │             │  Reports syntax errors at this stage
+  └──────┬──────┘
+         │  AST (Abstract Syntax Tree)
+         ▼
+  ┌─────────────────────┐
+  │  SEMANTIC ANALYZER  │  Checks types, declarations, scopes
+  │                     │  Reports type and scope errors here
+  └──────────┬──────────┘
+             │  Annotated AST
+             ▼
+  ┌─────────────────────┐
+  │  ERROR DIAGNOSTICS  │  Formats and outputs human-readable error
+  │                     │  messages to stderr
+  └─────────────────────┘
+
+GCC Error Format:
+  <filename>:<line>:<column>: <type>: <message>
+  Example: main.c:5:10: error: expected ';' before 'printf'
+
+  Where:
+    main.c    = file where the error occurred
+    5         = line number
+    10        = column number
+    error     = severity (error / warning / note)
+    expected  = the actual diagnostic message
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART 2: BEGINNER DIFFICULTY ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Problem 1: Jargon Overload
+  GCC uses terms like: "token", "lvalue", "redefinition", "implicit",
+  "incompatible types". Beginners do not know these terms.
+
+Problem 2: No Explanation of Root Cause
+  GCC says WHAT is wrong syntactically, not WHY the student made 
+  the mistake or what they intended to write.
+
+Problem 3: No Fix Suggestion  
+  GCC never says "add a semicolon here" or "you need to #include stdio.h".
+  The student must guess the fix.
+
+Problem 4: Multiple Cascading Errors
+  One single mistake (e.g., missing semicolon) can cause GCC to output
+  5-10 error messages. Beginners get overwhelmed.
+
+Problem 5: Unsafe Fixes from Internet
+  Frustrated students copy-paste fixes from Stack Overflow without 
+  understanding security issues (gets(), unchecked casts, etc.)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART 3: PROJECT VALUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This AI Tutor adds value by:
+  1. Translating technical jargon into simple English
+  2. Pointing to the exact construct that caused the error
+  3. Recommending a safe, verified fix
+  4. Teaching secure coding habits (avoid gets, use fgets)
+  5. Working offline — no internet needed for C students in labs
+
+Research Context:
+  Studies show (Denny et al., 2014) that 90% of novice programmers
+  misinterpret GCC error messages on first reading. 
+  The Elm programming language pioneered "friendly compiler errors"
+  and was praised by educators as reducing debugging time by 40%.
+
+This project applies those insights specifically to GCC + C,
+filling a gap in available offline, beginner-focused tools.

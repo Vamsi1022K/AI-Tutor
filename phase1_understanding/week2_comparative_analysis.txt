@@ -1,0 +1,68 @@
+COMPARATIVE ANALYSIS
+=====================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 2
+Phase         : Phase 1 – Problem Understanding and Foundations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE 1: FEATURE COMPARISON OF EXISTING TOOLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Feature              | GCC  | Clang | Python Tutor | ChatGPT | THIS PROJECT
+---------------------|------|-------|--------------|---------|-------------
+Plain English Output | No   | No    | Partial      | Yes     | YES
+C Language Support   | Yes  | Yes   | No           | Partial | YES
+Offline Operation    | Yes  | Yes   | Yes          | No      | YES
+Fix Suggestion       | No   | No    | No           | Yes     | YES
+Secure Fix Only      | N/A  | N/A   | N/A          | No      | YES
+GCC Integration      | Yes  | No    | No           | No      | YES
+Beginner-Friendly    | No   | No    | Yes (Python) | Yes     | YES
+Lightweight (no GPU) | Yes  | Yes   | Yes          | No      | YES
+Free and Open Source | Yes  | Yes   | Yes          | No      | YES
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE 2: ERROR MESSAGE QUALITY COMPARISON (Example Error)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Code with error: int x = 5 [missing semicolon]
+
+GCC Output:
+  main.c:4:5: error: expected ';' before 'printf'
+  Beginner Rating: 1/5 (very confusing)
+
+Clang Output:
+  main.c:4:14: error: expected ';' after expression
+                  int x = 5
+                            ^
+                            ;
+  Beginner Rating: 2/5 (slightly better, shows location)
+
+This Project Output:
+  ❌ Issue #1 — Syntax Error
+  📁 File: main.c, Line 4
+  🔴 Original GCC: expected ';' before 'printf'
+  ──────────────────────────────────────────
+  💡 What it means:
+     You forgot to put a semicolon (;) at the end of a statement.
+     In C, every statement must end with a semicolon.
+  🔧 How to fix it:
+     Change:  int x = 5
+     To:      int x = 5;
+  🔒 ✅ Safe Fix
+  Beginner Rating: 5/5 (clear, actionable, safe)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE 3: SECURITY COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Security Concern       | GCC | ChatGPT | THIS PROJECT
+-----------------------|-----|---------|-------------
+May suggest gets()     | N/A | YES     | NO (blocked)
+May suggest strcpy()   | N/A | YES     | NO (blocked)
+May suggest blind cast | N/A | YES     | NO (blocked)
+All fixes validated    | N/A | No      | YES (GCC-verified)
+Promotes safe coding   | No  | No      | YES
+
+CONCLUSION:
+This project is the ONLY solution that combines:
+  Plain English  +  C-Specific  +  Offline  +  Secure Fixes

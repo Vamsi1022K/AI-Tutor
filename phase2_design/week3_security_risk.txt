@@ -1,0 +1,107 @@
+SECURITY AND RISK ANALYSIS DOCUMENT
+=====================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 3
+Phase         : Phase 2 – Requirement Analysis and System Design
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This document identifies potential security risks in the AI Tutor system
+and defines mitigation strategies to ensure all fix recommendations
+promote safe and secure C coding practices.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. IDENTIFIED SECURITY RISKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RISK 1: Suggesting the gets() Function
+  Severity  : CRITICAL
+  Description: gets() reads unlimited input — a classic buffer overflow
+               vulnerability. If the AI suggests gets() to fix an input
+               problem, the student's program becomes vulnerable.
+  Example   : Fixing "undeclared identifier" near input by suggesting:
+               char buf[10]; gets(buf);  ← DANGEROUS
+  Mitigation: gets() is on the BLOCKLIST. System will NEVER suggest it.
+              Alternative always shown: fgets(buf, sizeof(buf), stdin);
+
+RISK 2: Suggesting Unbounded scanf("%s")
+  Severity  : HIGH
+  Description: scanf("%s") reads until whitespace with NO SIZE LIMIT.
+               An attacker can overflow the buffer.
+  Example   : scanf("%s", name);  ← DANGEROUS if name has limited size
+  Mitigation: Always suggest scanf("%49s", name) or fgets() instead.
+
+RISK 3: Suggesting strcpy() Without Bounds
+  Severity  : HIGH
+  Description: strcpy() does not check destination buffer size.
+               Can cause buffer overflow if source is longer than destination.
+  Mitigation: Always suggest strncpy(dest, src, sizeof(dest)-1) instead.
+
+RISK 4: Suggesting Blind Type Casting
+  Severity  : MEDIUM
+  Description: When a type mismatch error occurs, a naive fix is to
+               add a type cast: (int*)ptr. This silences the warning
+               but may cause undefined behavior or data corruption.
+  Example   : Fixing pointer mismatch with (int*)somePtr ← DANGEROUS
+  Mitigation: Explain the real type mismatch. Suggest using the correct
+              type declaration instead. Never suggest blind casting.
+
+RISK 5: Incorrect Fix Corrupting Student Code
+  Severity  : MEDIUM
+  Description: If the AI suggests an incorrect fix, the student may
+               apply it and break their code further, leading to
+               frustration or wasted time.
+  Mitigation: All dataset fixes are pre-validated — they compile with GCC.
+              Unknown errors get a conservative generic message.
+
+RISK 6: Running Arbitrary Code via Subprocess
+  Severity  : LOW (internal)
+  Description: The system runs GCC as a subprocess. If the C file path 
+               contains shell injection characters, it could be exploited.
+  Mitigation: Use subprocess.run() with a list argument (not shell=True).
+              This prevents shell injection completely.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SECURITY RULES ENFORCED IN THE SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RULE 1: UNSAFE FUNCTION BLOCKLIST
+  The following functions will NEVER appear in any fix suggestion:
+    - gets()
+    - puts() without bounds consideration
+    - scanf("%s") without width specifier
+    - strcpy()
+    - strcat()
+
+RULE 2: SAFE ALTERNATIVES ALWAYS SHOWN
+  Unsafe Function    → Safe Alternative
+  gets(buf)          → fgets(buf, sizeof(buf), stdin)
+  strcpy(d, s)       → strncpy(d, s, sizeof(d)-1)
+  strcat(d, s)       → strncat(d, s, sizeof(d)-strlen(d)-1)
+  scanf("%s", x)     → scanf("%49s", x) or fgets(x, n, stdin)
+
+RULE 3: NO BLIND POINTER CASTING
+  Type mismatch errors explain the root cause and suggest using
+  the correct type — not casting to suppress the warning.
+
+RULE 4: SUBPROCESS SAFETY
+  GCC is invoked using: subprocess.run(['gcc', ...], ...)
+  Shell=True is NEVER used.
+
+RULE 5: SECURE FLAG IN DATASET
+  Every dataset entry has a "secure": true/false field.
+  Entries must be verified before being marked secure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. RISK SUMMARY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Risk ID | Description                    | Severity | Mitigation Status
+--------|--------------------------------|----------|-----------------
+R1      | Suggesting gets()              | Critical | Blocked via blocklist
+R2      | Unbounded scanf("%s")          | High     | Blocked + safe alt shown
+R3      | Unbounded strcpy()             | High     | Blocked + safe alt shown
+R4      | Blind type casting             | Medium   | Explain root cause instead
+R5      | Incorrect fix suggestion       | Medium   | All fixes pre-validated
+R6      | Shell injection via subprocess | Low      | Use list args, no shell=True

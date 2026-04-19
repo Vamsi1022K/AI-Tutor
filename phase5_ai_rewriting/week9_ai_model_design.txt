@@ -1,0 +1,140 @@
+AI MODEL DESIGN DOCUMENT
+==========================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 9
+Phase         : Phase 5 – AI-Based Error Rewriting
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: AI APPROACH SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Three approaches were studied and evaluated:
+
+APPROACH A: Rule-Based Pattern Matching (SELECTED — Primary)
+  Description:
+    Maintain a JSON dataset of (error pattern → explanation + fix).
+    Use Python regex to match each GCC error message against known patterns.
+    Return the human-written explanation and fix from the matched dataset entry.
+
+  Pros:
+    ✅ Fully deterministic — same input → same output always
+    ✅ 100% accuracy for known error patterns
+    ✅ No model loading time — instant response
+    ✅ Easy to extend: just add entries to the JSON file
+    ✅ Works offline — no internet, no GPU, no extra libraries
+    ✅ Human-verified fixes — guaranteed to be correct and secure
+    ✅ Lightweight — runs on any Python 3.7+ installation
+
+  Cons:
+    ❌ Does not generalize to errors not in the dataset
+    ❌ Requires manual effort to expand dataset coverage
+
+APPROACH B: T5 / Flan-T5 Transformer (OPTIONAL — Fallback)
+  Description:
+    Use a pre-trained text-to-text model (Google Flan-T5) to rewrite
+    GCC errors into plain English at inference time.
+    Prompt format: "Explain this C compiler error to a beginner: <error>"
+
+  Pros:
+    ✅ Can generalize to errors NOT in the dataset
+    ✅ Produces natural-sounding explanations
+
+  Cons:
+    ❌ Requires: pip install transformers torch
+    ❌ Model download: ~300MB for flan-t5-small
+    ❌ Startup time: 2–5 seconds to load model
+    ❌ May hallucinate incorrect or insecure fixes without fine-tuning
+    ❌ Not guaranteed to match our security rules without post-processing
+
+APPROACH C: Fine-Tuning a Seq2Seq Model
+  Description:
+    Fine-tune a T5 model on the annotated dataset to directly map
+    GCC error strings to plain English explanations.
+  Cons:
+    ❌ Requires large dataset (100+ examples minimum for useful fine-tuning)
+    ❌ Requires GPU training time
+    ❌ Overkill for this project scope
+  Status: NOT SELECTED (future work)
+
+FINAL DECISION:
+  Primary  : Approach A (Rule-Based) — for all 10 known error types
+  Fallback : Approach B (Flan-T5) — only when no dataset match found
+  This hybrid gives determinism + coverage
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: RULE-BASED MATCHING DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The matching engine uses compiled regex patterns mapped to dataset IDs:
+
+  Pattern                              → Error ID
+  ─────────────────────────────────────────────────
+  r"expected\s*';'"                    → E001
+  r"undeclared"                        → E002
+  r"incompatible types when assigning" → E003
+  r"implicit declaration of function"  → E004
+  r"expected\s*'\)'"                   → E005
+  r"too few arguments"                 → E006
+  r"too many arguments"                → E006 (shared explanation)
+  r"redefinition of"                   → E009
+  r"return with a value.*void"         → E010
+  r"format '%d' expects.*double"       → E011
+  r"format '%d' expects"              → E011 (general format error)
+  r"expected\s*'\}'"                   → E015
+  r"expected '\}' at end"              → E015
+
+Matching Algorithm:
+  1. For each parsed error dictionary, take the 'msg' field
+  2. Lowercase the message
+  3. Test each regex pattern against the message (in order)
+  4. On first match: look up the mapped Error ID in the dataset
+  5. Return the matched dataset entry (explanation + fix)
+  6. If no pattern matches: return generic fallback message
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: NLP BACKGROUND CONCEPTS STUDIED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Concept 1: Text Rewriting / Paraphrase Generation
+  Task: Convert a technical sentence into a simpler equivalent
+  Used in: Grammar correction systems, text simplification tools
+  Application here: GCC error → plain English equivalent
+
+Concept 2: Transformer Architecture (Attention Mechanism)
+  Key idea: Self-attention allows model to weigh relationship between
+            words in a sequence when generating output
+  T5 Model: "Text-To-Text Transfer Transformer"
+  - Input and output are BOTH text strings
+  - Ideal for: summarization, translation, rewriting
+  - Format: "rewrite compiler error: <gcc message>" → "<plain explanation>"
+
+Concept 3: Seq2Seq (Sequence-to-Sequence) Learning
+  Architecture: Encoder reads input sequence, Decoder generates output
+  Used in: Machine translation, text summarization
+  Limitation here: needs 100+ training pairs; our dataset has 10
+
+Concept 4: Regex-Based Information Extraction
+  Tool: Python re module
+  Used to: Extract tokens from unstructured GCC output text
+  Pattern: r'^(?P<file>[^:]+):(?P<line>\d+):(?P<col>\d+)'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: TRANSFORMER FALLBACK DESIGN (Flan-T5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Model      : google/flan-t5-small
+Size       : ~300MB (downloads once, cached locally)
+Library    : Hugging Face transformers
+
+Prompt Template:
+  "Explain this C compiler error message to a beginner programmer
+   in simple English and suggest a fix: {gcc_error_message}"
+
+Integration:
+  - Load model ONCE at startup if --use-ai flag is passed
+  - Used ONLY when rule-based matching returns no match
+  - Output is displayed as-is with a note: "(AI-generated explanation)"
+
+Limitation Warning:
+  Fix suggestions from the Transformer are NOT security-validated.
+  The system marks them with: ⚠️ Verify this fix before using.

@@ -1,0 +1,60 @@
+IDENTIFIED PROBLEM GAP
+=======================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 2
+Phase         : Phase 1 – Problem Understanding and Foundations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE RESEARCH GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After reviewing all existing tools and research papers, the following
+critical gap has been identified:
+
+GAP STATEMENT:
+  "There exists NO lightweight, offline, C-language-specific tool that
+   automatically rewrites GCC compiler error messages into beginner-friendly
+   plain English explanations AND provides safe, secure fix recommendations,
+   while being directly integrated with the GCC compilation pipeline."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BREAKDOWN OF THE GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sub-gap 1: LANGUAGE SPECIFICITY
+  - Python Tutor exists for Python but not for C
+  - C is one of the most widely taught languages in universities
+  - C beginners have NO equivalent beginner-friendly error tool
+
+Sub-gap 2: OFFLINE AVAILABILITY
+  - ChatGPT/Copilot require internet — unavailable in exam halls,
+    lab sessions without WiFi, or in resource-limited environments
+  - Students in developing regions especially lack internet access
+
+Sub-gap 3: SECURE FIX RECOMMENDATIONS
+  - No existing tool validates that its suggested fixes are secure
+  - ChatGPT has been documented to suggest gets(), strcpy() which
+    are known to cause buffer overflow vulnerabilities in C programs
+  - Beginners who use these suggestions learn insecure coding habits
+
+Sub-gap 4: DIRECT COMPILER INTEGRATION
+  - Existing solutions require the student to manually copy-paste
+    the error message into a website or chat window
+  - No tool automatically intercepts GCC output and rewrites it
+    as part of the normal compilation workflow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MOTIVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This project is motivated by:
+  1. The documented struggle of novice C programmers with error messages
+  2. The success of friendly-error compilers (Elm) in education
+  3. The security risk of beginner programmers adopting unsafe fixes
+  4. The absence of an offline, specialized tool for this exact need
+
+Filling this gap will:
+  - Reduce debugging time for beginner C students
+  - Promote safe and secure coding habits from day one
+  - Make compiler design more accessible and educational
+  - Serve as a foundation for a more advanced AI-based tutor system

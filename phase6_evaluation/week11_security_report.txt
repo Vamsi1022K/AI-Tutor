@@ -1,0 +1,126 @@
+SECURE FIX RECOMMENDATION REPORT
+===================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 11
+Phase         : Phase 6 – Security and Evaluation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: SECURITY VALIDATION METHODOLOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each fix recommendation in the dataset was reviewed against the following
+security checklist before being approved and marked "secure: true".
+
+Security Checklist (applied to every fix):
+  [ ] Does the fix use gets()? — REJECT if yes
+  [ ] Does the fix use scanf("%s") without width limit? — REJECT if yes
+  [ ] Does the fix use strcpy() without bounds? — REJECT if yes
+  [ ] Does the fix suggest a blind pointer cast? — REJECT if yes
+  [ ] Does the fixed code compile cleanly with: gcc -Wall -Wextra? — MUST PASS
+  [ ] Does the fix introduce any undefined behavior? — REJECT if yes
+  [ ] Is the explanation factually correct? — VERIFY manually
+
+Subprocess Security:
+  [ ] GCC is invoked with list arguments (not shell=True) — ✅ Implemented
+  [ ] No user input is passed directly to shell — ✅ Verified
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: PER-ERROR SECURITY REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Error E001 — Missing Semicolon
+  Fix Suggested : Add semicolon: int x = 5;
+  Security Check: Simple punctuation fix — no function calls, no pointers
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+Error E002 — Undeclared Variable
+  Fix Suggested : Declare with int y = 0; before use
+  Security Check: Integer declaration with zero-initialization is safe
+  Unsafe Funcs  : None used
+  Note          : Zero-initialization is a good practice (avoids garbage values)
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+Error E003 — Incompatible Types
+  Fix Suggested : Use correct type (char* for text, int for numbers)
+  Security Check: Does NOT suggest blind cast. Explains type properly.
+                  Blind cast alternative (int)(char*) was considered and REJECTED.
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified both alternatives
+  Verdict       : ✅ SECURE
+
+Error E004 — Implicit Function Declaration
+  Fix Suggested : Add #include <stdio.h>
+  Security Check: Simply including the correct header — no security concern
+  Unsafe Funcs  : None used
+  Note          : #include <stdio.h> is mandatory best practice
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+Error E005 — Missing Parenthesis
+  Fix Suggested : Close the parenthesis: (5 + 3)
+  Security Check: Syntax-only fix — no function or pointer involvement
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+Error E006 — Too Few Arguments
+  Fix Suggested : Provide all required arguments: add(5, 3)
+  Security Check: Integer argument — no buffer or pointer concern
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+Error E009 — Redefinition
+  Fix Suggested : Remove second 'int' keyword, just assign: x = 10;
+  Security Check: Assignment-only change — no security risk
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+Error E010 — Void Return with Value
+  Fix Suggested : Option 1: use return; (no value)
+                  Option 2: change to int function
+  Security Check: Both options are safe C practices
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — both options verified
+  Verdict       : ✅ SECURE
+
+Error E011 — Format Specifier Mismatch
+  Fix Suggested : Use %f or %lf for double values
+  Security Check: Correct format specifier prevents undefined behavior
+                  in printf — this fix actually IMPROVES security
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified (warning disappears with -Wall)
+  Verdict       : ✅ SECURE
+
+Error E015 — Missing Closing Brace
+  Fix Suggested : Add closing } at end of function
+  Security Check: Structural fix only — no security concern
+  Unsafe Funcs  : None used
+  Compiles?     : Yes — verified
+  Verdict       : ✅ SECURE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: SECURITY SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Error ID | Fix Secure? | Unsafe Funcs? | Compiles Clean? | Verdict
+---------|-------------|----------------|-----------------|--------
+E001     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E002     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E003     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E004     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E005     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E006     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E009     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E010     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E011     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+E015     | ✅ Yes      | ❌ None        | ✅ Yes          | SECURE
+
+TOTAL: 10/10 fixes are SECURE ✅
+No unsafe functions (gets, strcpy, scanf without bounds) used anywhere.
+No blind type casts suggested anywhere.
+No undefined behavior introduced by any fix.

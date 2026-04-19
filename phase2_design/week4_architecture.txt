@@ -1,0 +1,102 @@
+SYSTEM ARCHITECTURE DOCUMENT
+==============================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 4
+Phase         : Phase 2 – Requirement Analysis and System Design
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. OVERALL SYSTEM ARCHITECTURE DIAGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    ┌───────────────────────────────────────────┐
+                    │           AI COMPILER TUTOR               │
+                    │    python rewriter.py myprogram.c         │
+                    └───────────────────────────────────────────┘
+                                        │
+                                        │ [Input: .c file path]
+                                        ▼
+                    ┌───────────────────────────────────────────┐
+                    │         MODULE 1: INPUT LAYER              │
+                    │  - Reads command-line argument             │
+                    │  - Validates file exists and is .c         │
+                    │  - Passes file path to Compilation Module  │
+                    └─────────────────────┬─────────────────────┘
+                                          │ file path
+                                          ▼
+                    ┌───────────────────────────────────────────┐
+                    │      MODULE 2: GCC COMPILATION MODULE      │
+                    │  - Runs: gcc -Wall -Wextra <file> -o NUL  │
+                    │  - Captures stderr (error output) fully   │
+                    │  - Also captures return code (0=ok, 1=err)│
+                    └─────────────────────┬─────────────────────┘
+                                          │ raw stderr string
+                                          ▼
+                    ┌───────────────────────────────────────────┐
+                    │        MODULE 3: ERROR PARSER MODULE       │
+                    │  - Splits stderr into individual lines     │
+                    │  - Applies regex: file:line:col:type:msg   │
+                    │  - Returns list of structured error dicts  │
+                    └─────────────────────┬─────────────────────┘
+                                          │ [{file, line, col, type, msg}]
+                                          ▼
+                    ┌───────────────────────────────────────────┐
+                    │       MODULE 4: AI REWRITING MODULE        │
+                    │  - For each error dict:                    │
+                    │    1. Regex-match against error patterns   │
+                    │    2. Look up matching entry in dataset    │
+                    │    3. If no match: use generic explanation │
+                    │  - Returns plain English explanation       │
+                    └─────────────────────┬─────────────────────┘
+                                          │ explanation strings
+                                          ▼
+                    ┌───────────────────────────────────────────┐
+                    │     MODULE 5: SECURE FIX RECOMMENDER       │
+                    │  - Retrieves fix from matched dataset entry│
+                    │  - Validates fix has no unsafe functions   │
+                    │  - Returns fix string with secure flag     │
+                    └─────────────────────┬─────────────────────┘
+                                          │ fixes + secure flags
+                                          ▼
+                    ┌───────────────────────────────────────────┐
+                    │       MODULE 6: OUTPUT FORMATTER           │
+                    │  - Combines: issue#, category, file, line │
+                    │    original error, explanation, fix, flag  │
+                    │  - Prints structured, human-readable output│
+                    └───────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DATA FLOW DIAGRAM (Level 0 - Context Diagram)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [Student] ──C file──► [AI TUTOR SYSTEM] ──Rewritten Errors──► [Student]
+                              │
+                              │ ──queries──► [annotated_errors.json Dataset]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DATA FLOW DIAGRAM (Level 1 - Internal)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  C File Path
+      │
+      ▼
+  [GCC Module]──stderr──►[Parser]──dicts──►[Rewriter]──►[Fix Rec]──►[Output]
+                                               │
+                                               └──────► [Dataset JSON]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. COMPONENT LAYER DIAGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌────────────────────────────────────────────────────┐
+  │ PRESENTATION LAYER                                  │
+  │   Output Formatter (terminal colored output)        │
+  ├────────────────────────────────────────────────────┤
+  │ LOGIC LAYER                                         │
+  │   Error Parser | AI Rewriter | Fix Recommender      │
+  ├────────────────────────────────────────────────────┤
+  │ DATA LAYER                                          │
+  │   annotated_errors.json (dataset)                   │
+  ├────────────────────────────────────────────────────┤
+  │ INTEGRATION LAYER                                   │
+  │   GCC Compilation Module (subprocess)               │
+  └────────────────────────────────────────────────────┘

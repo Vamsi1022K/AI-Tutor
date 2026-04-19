@@ -1,0 +1,78 @@
+PROJECT OBJECTIVES AND SCOPE
+==============================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 1
+Phase         : Phase 1 – Problem Understanding and Foundations
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: PROJECT OBJECTIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Objective 1: Collect and Categorize Common GCC Errors
+  - Write intentionally erroneous C programs covering all major error types
+  - Compile each using GCC and capture the raw error messages
+  - Classify errors into Syntax, Type, Declaration, Scope, and Linker categories
+
+Objective 2: Create an Annotated Dataset
+  - For each GCC error, write a plain English explanation
+  - Provide a safe and correct fix suggestion
+  - Store in structured JSON format for AI module use
+
+Objective 3: Build an AI/Rule-Based Error Rewriting Module
+  - Implement pattern-matching to identify known error types
+  - Return pre-written plain English explanation and fix from dataset
+  - Optionally use a Transformer model (T5) for unseen errors
+
+Objective 4: Integrate with GCC Diagnostics
+  - Run GCC as a subprocess from Python
+  - Parse GCC stderr output using regular expressions
+  - Feed parsed errors into the rewriting module
+
+Objective 5: Ensure Secure Fix Recommendations
+  - Never suggest dangerous functions (gets, strcpy, blind casts)
+  - Always recommend safe alternatives (fgets, strncpy, correct types)
+  - Validate all fixes compile cleanly with GCC
+
+Objective 6: Evaluate System Performance
+  - Compare beginner comprehension of original vs rewritten messages
+  - Measure clarity improvement using a scoring rubric (1-5 scale)
+  - Validate 100% of fixes are syntactically and semantically correct
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: PROJECT SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IN SCOPE:
+  Language       : C (C99/C11 standard)
+  Compiler       : GCC (GNU Compiler Collection)
+  Error Types    : Syntax errors, Semantic/type errors, Declaration errors,
+                   Scope errors, Format string errors
+  Interface      : Command-line (terminal)
+  Platform       : Linux / Windows / macOS (Python + GCC required)
+  AI Approach    : Rule-based lookup + optional T5 Transformer fallback
+  Output Format  : Formatted terminal output with color coding
+
+OUT OF SCOPE:
+  - Runtime errors (segmentation faults, infinite loops)
+  - Linker errors beyond "undefined reference to main"
+  - Languages other than C (no C++, Java, Python, etc.)
+  - Other compilers (Clang, MSVC, ICC)
+  - Graphical User Interface (GUI)
+  - Cloud or web deployment
+  - Real-time compiler integration (IDE plugin)
+
+CONSTRAINTS:
+  - All functionality must work fully offline
+  - Python 3.7+ and GCC must be installed on the target machine
+  - Dataset size limited to 15 entries for this project phase
+  - No paid API calls or internet dependencies
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: SUCCESS CRITERIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ 10+ error programs compiled and errors captured
+  ✅ Dataset of 10+ annotated errors created  
+  ✅ rewriter.py processes all 10 test errors correctly
+  ✅ All fix suggestions pass GCC compilation check
+  ✅ Clarity score improves from avg 1.6 to avg 4.5+ (out of 5)
+  ✅ No unsafe functions in any fix suggestion

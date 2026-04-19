@@ -1,0 +1,52 @@
+[
+  {
+    "id": "E001",
+    "file": "err_001_missing_semicolon.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_001_missing_semicolon.c: In function 'main':"
+  },
+  {
+    "id": "E002",
+    "file": "err_002_undeclared_variable.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_002_undeclared_variable.c: In function 'main':"
+  },
+  {
+    "id": "E003",
+    "file": "err_003_incompatible_types.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_003_incompatible_types.c: In function 'main':"
+  },
+  {
+    "id": "E004",
+    "file": "err_004_implicit_declaration.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_004_implicit_declaration.c: In function 'main':"
+  },
+  {
+    "id": "E005",
+    "file": "err_005_missing_paren.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_005_missing_paren.c: In function 'main':"
+  },
+  {
+    "id": "E006",
+    "file": "err_006_too_few_args.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_006_too_few_args.c: In function 'main':"
+  },
+  {
+    "id": "E009",
+    "file": "err_007_redefinition.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_007_redefinition.c: In function 'main':"
+  },
+  {
+    "id": "E010",
+    "file": "err_008_void_return.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_008_void_return.c: In function 'greet':"
+  },
+  {
+    "id": "E011",
+    "file": "err_009_format_mismatch.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_009_format_mismatch.c: In function 'main':"
+  },
+  {
+    "id": "E015",
+    "file": "err_010_missing_brace.c",
+    "gcc_error": "c:\\Users\\vamsi\\OneDrive\\Documents\\Desktop\\Sem 4\\compiler design\\cd ag\\errors\\err_010_missing_brace.c: In function 'main':"
+  }
+]

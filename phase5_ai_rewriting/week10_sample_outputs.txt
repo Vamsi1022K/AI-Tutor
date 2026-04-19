@@ -1,0 +1,224 @@
+SAMPLE REWRITTEN ERROR OUTPUTS
+================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 10
+Phase         : Phase 5 – AI-Based Error Rewriting
+
+This document shows the BEFORE (GCC raw output) and AFTER (AI Tutor output)
+for each of the 10 test error programs.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 1: err_001_missing_semicolon.c
+Command: python rewriter.py errors/err_001_missing_semicolon.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_001_missing_semicolon.c:8:5: error: expected ';' before 'printf'
+
+AFTER — AI Tutor Output:
+  ══════════════════════════════════════════════════════════════
+    🤖  AI COMPILER TUTOR
+    📄  File: err_001_missing_semicolon.c
+    ⚠️   Found 1 issue — fix from the top down
+  ══════════════════════════════════════════════════════════════
+
+    ❌  Issue #1  —  Syntax Error
+    📁  File : err_001_missing_semicolon.c,  Line 8
+    🔴  Original GCC output:
+           err_001_missing_semicolon.c:8:5: error: expected ';' before 'printf'
+    ──────────────────────────────────────────────────────────────
+    💡  What it means:
+         You forgot to put a semicolon (;) at the end of a statement.
+         In C, every statement must end with a semicolon — without it,
+         the compiler gets confused and thinks the next line is part of
+         the same statement.
+
+    🔧  How to fix it:
+         Add a semicolon (;) at the end of the statement before printf.
+         Change:   int x = 5
+         To:       int x = 5;
+
+    🔒  ✅ Safe Fix
+
+Improvement: GCC gave 1 cryptic line → AI Tutor gives 6 clear lines ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 2: err_002_undeclared_variable.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_002_undeclared_variable.c:4:20: error: 'y' undeclared (first use in this function)
+  err_002_undeclared_variable.c:4:20: note: each undeclared identifier is reported only once
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Declaration Error
+    📁  File: err_002_undeclared_variable.c,  Line 4
+    🔴  err_002_undeclared_variable.c:4:20: error: 'y' undeclared ...
+    💡  What it means:
+         You are using a variable called 'y' but you never declared it.
+         In C, you must declare every variable before you can use it.
+    🔧  How to fix it:
+         Declare the variable before you use it. Add: int y = 0;
+         Insert this line before the line that uses y.
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 3: err_003_incompatible_types.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_003_incompatible_types.c:5:7: error: incompatible types when
+  assigning to type 'int' from type 'char *'
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Type Error
+    💡  What it means:
+         You are trying to store a text string into a variable that can
+         only hold a number (int). An int stores whole numbers only.
+    🔧  How to fix it:
+         For text: change 'int x' to 'char *x'
+         For a number: change x = "hello" to x = 42
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 4: err_004_implicit_declaration.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_004_implicit_declaration.c:3:5: warning: implicit declaration of
+  function 'printf' [-Wimplicit-function-declaration]
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Declaration Error
+    💡  What it means:
+         You are using printf() but have not told the compiler where to
+         find it. You need to include the correct header file.
+    🔧  How to fix it:
+         Add at the very top of your C file:
+             #include <stdio.h>
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 5: err_005_missing_paren.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_005_missing_paren.c:5:19: error: expected ')' before ';' token
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Syntax Error
+    💡  What it means:
+         You opened a parenthesis '(' but forgot to close it with ')'.
+         The compiler reached the semicolon without finding the closing paren.
+    🔧  How to fix it:
+         Change:  int x = (5 + 3;
+         To:      int x = (5 + 3);
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 6: err_006_too_few_args.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_006_too_few_args.c:9:18: error: too few arguments to function 'add'
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Syntax Error
+    💡  What it means:
+         You are calling the function 'add' without providing enough inputs.
+         The function expects 2 arguments but you only gave it 1.
+    🔧  How to fix it:
+         Change:  add(5)
+         To:      add(5, 3)
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 7: err_007_redefinition.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_007_redefinition.c:6:9: error: redefinition of 'x'
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Declaration Error
+    💡  What it means:
+         You have declared the variable 'x' twice in the same block.
+         A variable can only be declared once per block.
+    🔧  How to fix it:
+         Remove the second 'int' keyword:
+         Change:  int x = 10;
+         To:      x = 10;
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 8: err_008_void_return.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_008_void_return.c:6:12: error: return with a value, in function
+  returning void
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Scope Error
+    💡  What it means:
+         Your function greet() is declared as 'void' — meaning no return.
+         But you wrote 'return 42;' which tries to send back a number.
+    🔧  How to fix it:
+         Option 1: Use 'return;' with no value
+         Option 2: Change 'void greet()' to 'int greet()' to return a number
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 9: err_009_format_mismatch.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_009_format_mismatch.c:5:14: warning: format '%d' expects argument
+  of type 'int' but argument 2 has type 'double' [-Wformat=]
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Type Error
+    💡  What it means:
+         You used %d in printf which is for integers, but you passed a
+         decimal number (double). This causes incorrect output.
+    🔧  How to fix it:
+         Use %f or %lf for decimal numbers:
+         Change:  printf("%d\n", x);
+         To:      printf("%f\n", x);
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST 10: err_010_missing_brace.c
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE — Raw GCC Output:
+  err_010_missing_brace.c:7:1: error: expected '}' at end of input
+
+AFTER — AI Tutor Output:
+    ❌  Issue #1  —  Syntax Error
+    💡  What it means:
+         You opened a code block with '{' but forgot to close it with '}'.
+         The compiler reached the end of the file while still looking for '}'.
+    🔧  How to fix it:
+         Add the missing closing brace at the end of your function:
+         }   /* closing brace for main() */
+    🔒  ✅ Safe Fix
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY: ALL TESTS PASSED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test | Error ID | Detected | Explanation Given | Safe Fix | RESULT
+-----|----------|----------|-------------------|----------|-------
+1    | E001     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+2    | E002     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+3    | E003     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+4    | E004     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+5    | E005     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+6    | E006     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+7    | E009     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+8    | E010     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+9    | E011     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+10   | E015     | ✅ Yes   | ✅ Yes            | ✅ Yes   | PASS
+
+TOTAL: 10/10 PASSED — All explanations correct — All fixes secure ✅

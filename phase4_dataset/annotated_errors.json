@@ -1,0 +1,332 @@
+[
+  {
+    "id": "E001",
+    "category": "Syntax",
+    "gcc_error": "error: expected ';' before",
+    "plain_explanation": "A statement or declaration is missing a terminating semicolon. In C, the semicolon acts as a separator—without it, the compiler cannot determine where one instruction ends and the next begins.",
+    "example_code": "int x = 5\n    printf(\"%d\\n\", x);",
+    "fix": "Locate the previous line or expression and ensure it ends with a semicolon (;). Example: int x = 5; instead of int x = 5.",
+    "fixed_code": "int x = 5;\n    printf(\"%d\\n\", x);",
+    "secure": true
+  },
+  {
+    "id": "E002",
+    "category": "Declaration",
+    "gcc_error": "error: 'y' undeclared (first use in this function)",
+    "plain_explanation": "You are using a variable called 'y' but you never declared it. In C, you must declare every variable before you can use it. Declaring means telling the program what type of data the variable will hold.",
+    "example_code": "printf(\"%d\\n\", y);",
+    "fix": "Declare the variable before you use it. Add the correct type:\n    int y = 0;\nInsert this line before the line that uses y. Choose the correct type based on what y should hold (int for whole numbers, double for decimals, char for characters).",
+    "fixed_code": "int y = 0;\n    printf(\"%d\\n\", y);",
+    "secure": true
+  },
+  {
+    "id": "E003",
+    "category": "Type",
+    "gcc_error": "error: incompatible types when assigning to type 'int'",
+    "plain_explanation": "You are trying to store a text string into a variable that can only hold a number (int). In C, int variables store whole numbers only — they cannot store text.",
+    "example_code": "int x;\nx = \"hello\";",
+    "fix": "Either change the variable type to match what you want to store, or assign a number instead.\nFor text: change 'int x' to 'char *x'\nFor a number: change 'x = \"hello\"' to 'x = 42'",
+    "fixed_code": "char *x;\nx = \"hello\";\n\n/* OR */\n\nint x;\nx = 42;",
+    "secure": true
+  },
+  {
+    "id": "E004",
+    "category": "Declaration",
+    "gcc_error": "warning: implicit declaration of function 'printf'",
+    "plain_explanation": "You are using the function printf() but you have not told the compiler where to find it. In C, you must include the correct header file at the top of your program. For printf(), you need #include <stdio.h>.",
+    "example_code": "int main() {\n    printf(\"Hello, World!\\n\");\n    return 0;\n}",
+    "fix": "Add the following line at the very top of your C file:\n    #include <stdio.h>",
+    "fixed_code": "#include <stdio.h>\n\nint main() {\n    printf(\"Hello, World!\\n\");\n    return 0;\n}",
+    "secure": true
+  },
+  {
+    "id": "E005",
+    "category": "Syntax",
+    "gcc_error": "error: expected ')' before ';' token",
+    "plain_explanation": "You opened a parenthesis '(' in an expression but forgot to close it with ')'.",
+    "example_code": "int x = (5 + 3;",
+    "fix": "Add the missing closing parenthesis ')' before the semicolon.\nChange:  int x = (5 + 3;\nTo:      int x = (5 + 3);",
+    "fixed_code": "int x = (5 + 3);",
+    "secure": true
+  },
+  {
+    "id": "E006",
+    "category": "Syntax",
+    "gcc_error": "error: too few arguments to function 'add'",
+    "plain_explanation": "You are calling the function 'add' but you have not provided enough input values (arguments).",
+    "example_code": "int add(int a, int b) { return a + b; }\nint result = add(5);",
+    "fix": "Provide all required arguments in the function call.\nChange:  add(5)\nTo:      add(5, 3)",
+    "fixed_code": "int result = add(5, 3);",
+    "secure": true
+  },
+  {
+    "id": "E009",
+    "category": "Declaration",
+    "gcc_error": "error: redefinition of 'x'",
+    "plain_explanation": "You have declared the variable 'x' twice in the same block of code.",
+    "example_code": "int x = 5;\nint x = 10;",
+    "fix": "Remove the second 'int' keyword. Just reassign the value:\nx = 10;",
+    "fixed_code": "int x = 5;\nx = 10;",
+    "secure": true
+  },
+  {
+    "id": "E010",
+    "category": "Scope",
+    "gcc_error": "error: return with a value, in function returning void",
+    "plain_explanation": "Your function is declared as 'void' which means it returns nothing. But you tried to return a value.",
+    "example_code": "void greet() { return 42; }",
+    "fix": "Option 1: Remove the value (use 'return;')\nOption 2: Change the function to 'int greet()'",
+    "fixed_code": "void greet() { return; }",
+    "secure": true
+  },
+  {
+    "id": "E011",
+    "category": "Type",
+    "gcc_error": "warning: format '%d' expects argument of type 'int' but argument 2 has type 'double'",
+    "plain_explanation": "You used '%d' for a decimal number (double). %d is only for whole numbers.",
+    "example_code": "double x = 3.14;\nprintf(\"%d\", x);",
+    "fix": "Use %f or %lf for double.\nChange: printf(\"%d\", x);\nTo:     printf(\"%f\", x);",
+    "fixed_code": "double x = 3.14;\nprintf(\"%f\", x);",
+    "secure": true
+  },
+  {
+    "id": "E015",
+    "category": "Syntax",
+    "gcc_error": "error: expected '}' at end of input",
+    "plain_explanation": "You opened a code block with '{' but forgot to close it with '}'.",
+    "example_code": "int main() { return 0;",
+    "fix": "Add the missing closing brace '}' at the end of the function.",
+    "fixed_code": "int main() { return 0; }",
+    "secure": true
+  },
+  {
+    "id": "E016",
+    "category": "Memory",
+    "gcc_error": "warning: array subscript is above array bounds",
+    "plain_explanation": "You tried to access an index that is outside the size of your array.",
+    "example_code": "int arr[3]; arr[5] = 10;",
+    "fix": "Use a valid index (0 to size-1).",
+    "fixed_code": "int arr[3]; arr[2] = 10;",
+    "secure": true
+  },
+  {
+    "id": "E017",
+    "category": "Pointer",
+    "gcc_error": "warning: null pointer dereference",
+    "plain_explanation": "You tried to use a pointer that points to NULL (nothing).",
+    "example_code": "int *ptr = NULL; *ptr = 5;",
+    "fix": "Make the pointer point to a real variable address or allocate memory.",
+    "fixed_code": "int x; int *ptr = &x; *ptr = 5;",
+    "secure": true
+  },
+  {
+    "id": "E018",
+    "category": "Logic",
+    "gcc_error": "warning: division by zero",
+    "plain_explanation": "You are dividing by zero, which is undefined.",
+    "example_code": "int x = 10 / 0;",
+    "fix": "Ensure the divisor is never zero using an if statement.",
+    "fixed_code": "int d = 2; int x = 10 / d;",
+    "secure": true
+  },
+  {
+    "id": "E031",
+    "category": "Logic",
+    "gcc_error": "Infinite Loop",
+    "plain_explanation": "Your code contains a loop that repeats forever and never finishes. This happens when the exit condition is always true.",
+    "example_code": "while(1) { printf(\"hi\"); }",
+    "fix": "Ensure the loop has a clear exit condition and that the variable inside changes.",
+    "fixed_code": "int i=0; while(i<5){ printf(\"hi\"); i++; }",
+    "secure": true
+  },
+  {
+    "id": "E032",
+    "category": "Preprocessor",
+    "gcc_error": "error: stray '#' in program",
+    "plain_explanation": "You have a '#' character in a place where it doesn't belong.",
+    "example_code": "int x = 5; #",
+    "fix": "Remove the stray '#' character.",
+    "fixed_code": "int x = 5;",
+    "secure": true
+  },
+  {
+    "id": "E033",
+    "category": "Syntax",
+    "gcc_error": "error: expected '=', ',', ';', 'asm' or '__attribute__' before",
+    "plain_explanation": "The compiler encountered an unrecognized token or an invalid word order. This often happens if you have a typo in a keyword (like 'viod' instead of 'void') or if you types random text that doesn't follow C grammar.",
+    "example_code": "int x 5;",
+    "fix": "Carefully check for typos in keywords or missing symbols like '=' in assignments. If you entered random text, ensure it follows a valid C declaration format.",
+    "fixed_code": "int x = 5;",
+    "secure": true
+  },
+  {
+    "id": "E034",
+    "category": "Type",
+    "gcc_error": "error: request for member in something not a structure or union",
+    "plain_explanation": "You used '.' on a variable that is not a struct.",
+    "example_code": "int x; x.member = 5;",
+    "fix": "Ensure the variable is declared as a struct.",
+    "fixed_code": "struct S {int member;}; struct S x; x.member = 5;",
+    "secure": true
+  },
+  {
+    "id": "E035",
+    "category": "Pointer",
+    "gcc_error": "error: invalid type argument of unary '*' (have 'int')",
+    "plain_explanation": "You tried to use '*' on a normal integer.",
+    "example_code": "int x; *x = 5;",
+    "fix": "Only use '*' on pointer types (like int*).",
+    "fixed_code": "int *x = malloc(sizeof(int)); *x = 5;",
+    "secure": true
+  },
+  {
+    "id": "E036",
+    "category": "Math",
+    "gcc_error": "error: called object is not a function",
+    "plain_explanation": "You added () after a variable that is not a function.",
+    "example_code": "int x; x(5);",
+    "fix": "Remove parentheses if you meant to use the variable normally.",
+    "fixed_code": "int x = 5; printf(\"%d\", x);",
+    "secure": true
+  },
+  {
+    "id": "E037",
+    "category": "Memory",
+    "gcc_error": "error: subscripted value is neither array nor pointer",
+    "plain_explanation": "You used [] on a variable that is not an array.",
+    "example_code": "int x; x[0] = 5;",
+    "fix": "Declare the variable as an array if you want to use [].",
+    "fixed_code": "int x[1]; x[0] = 5;",
+    "secure": true
+  },
+  {
+    "id": "E038",
+    "category": "Syntax",
+    "gcc_error": "error: case label not within switch",
+    "plain_explanation": "You used 'case' outside of a switch block.",
+    "example_code": "case 1: break;",
+    "fix": "Move the case inside a switch(var) { ... } block.",
+    "fixed_code": "switch(x) { case 1: break; }",
+    "secure": true
+  },
+  {
+    "id": "E039",
+    "category": "Syntax",
+    "gcc_error": "error: 'default' label not within switch",
+    "plain_explanation": "You used 'default' outside of a switch block.",
+    "example_code": "default: break;",
+    "fix": "Move 'default' inside a switch block.",
+    "fixed_code": "switch(x) { default: break; }",
+    "secure": true
+  },
+  {
+    "id": "E040",
+    "category": "Declaration",
+    "gcc_error": "error: expected identifier before '{'",
+    "plain_explanation": "Missing function or variable name before a code block.",
+    "example_code": "void { }",
+    "fix": "Add the name of the function. Example: void fn() { }",
+    "fixed_code": "void fn() { }",
+    "secure": true
+  },
+  {
+    "id": "E041",
+    "category": "Type",
+    "gcc_error": "error: void value not ignored",
+    "plain_explanation": "Trying to store the result of a void function.",
+    "example_code": "void f(); int x = f();",
+    "fix": "Don't assign the result of a void function to a variable.",
+    "fixed_code": "void f(); f();",
+    "secure": true
+  },
+  {
+    "id": "E042",
+    "category": "Memory",
+    "gcc_error": "error: size of array is negative",
+    "plain_explanation": "Array size must be positive.",
+    "example_code": "int a[-1];",
+    "fix": "Use a positive constant for array size.",
+    "fixed_code": "int a[1];",
+    "secure": true
+  },
+  {
+    "id": "E043",
+    "category": "Syntax",
+    "gcc_error": "error: break statement not within loop or switch",
+    "plain_explanation": "Break is only for exits from loops or switch blocks.",
+    "example_code": "if(1) break;",
+    "fix": "Remove break or move it inside a loop.",
+    "fixed_code": "while(1) break;",
+    "secure": true
+  },
+  {
+    "id": "E044",
+    "category": "Syntax",
+    "gcc_error": "error: continue statement not within loop",
+    "plain_explanation": "Continue is only for skipping to the next loop iteration.",
+    "example_code": "if(1) continue;",
+    "fix": "Only use continue inside while/for/do loops.",
+    "fixed_code": "while(1) continue;",
+    "secure": true
+  },
+  {
+    "id": "E045",
+    "category": "Preprocessor",
+    "gcc_error": "error: #include expects",
+    "plain_explanation": "Missing < > or \" \" around the header filename.",
+    "example_code": "#include stdio.h",
+    "fix": "Example: #include <stdio.h>",
+    "fixed_code": "#include <stdio.h>",
+    "secure": true
+  },
+  {
+    "id": "E046",
+    "category": "Syntax",
+    "gcc_error": "error: two or more data types",
+    "plain_explanation": "Only one type allowed per declaration (e.g., int float x is wrong).",
+    "example_code": "int float x;",
+    "fix": "Use one type. Example: float x;",
+    "fixed_code": "float x;",
+    "secure": true
+  },
+  {
+    "id": "E047",
+    "category": "Declaration",
+    "gcc_error": "error: too many arguments to function 'exit'",
+    "plain_explanation": "exit() only takes one argument (status code).",
+    "example_code": "exit(0,1);",
+    "fix": "Use exit(0);",
+    "fixed_code": "exit(0);",
+    "secure": true
+  },
+  {
+    "id": "E048",
+    "category": "Logic",
+    "gcc_error": "warning: value computed is not used",
+    "plain_explanation": "Calculation result is discarded because it's not assigned.",
+    "example_code": "x + 5;",
+    "fix": "Assign it: x = x + 5;",
+    "fixed_code": "x = x + 5;",
+    "secure": true
+  },
+  {
+    "id": "E049",
+    "category": "Syntax",
+    "gcc_error": "error: lvalue required",
+    "plain_explanation": "Assignment target must be a variable, not a constant or result.",
+    "example_code": "5 = x;",
+    "fix": "Swap sides: x = 5;",
+    "fixed_code": "x = 5;",
+    "secure": true
+  },
+  {
+    "id": "E050",
+    "category": "Logic",
+    "gcc_error": "warning: statement with no effect",
+    "plain_explanation": "Line does nothing (often accidental typo inside loop).",
+    "example_code": "x == 5;",
+    "fix": "If assignment meant, use x = 5;",
+    "fixed_code": "x = 5;",
+    "secure": true
+  }
+]

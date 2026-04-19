@@ -1,0 +1,147 @@
+CONTEXT AND AST-LEVEL UNDERSTANDING
+======================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 7
+Phase         : Phase 4 – Context Analysis and Dataset Preparation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: WHAT IS AN ABSTRACT SYNTAX TREE (AST)?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Definition:
+  An Abstract Syntax Tree (AST) is a tree-based representation of the
+  syntactic structure of source code. Every construct in a C program —
+  declarations, expressions, statements, function calls — becomes a
+  node in the AST.
+
+  It is "abstract" because it omits irrelevant syntax details like
+  whitespace, comments, and punctuation (e.g., semicolons, braces),
+  keeping only the structural meaning.
+
+How GCC builds the AST:
+  Source Code (.c file)
+        │
+  [Lexer] → Token Stream
+        │
+  [Parser] → Abstract Syntax Tree (AST)
+        │
+  [Semantic Analyzer] → Annotated AST (with types, scopes, declarations)
+
+AST Node Types in C (simplified):
+  TranslationUnit     : The entire C source file
+  FunctionDecl        : A function declaration (int main())
+  CompoundStmt        : A block of statements enclosed in {}
+  DeclStmt            : A variable declaration (int x = 5;)
+  ExprStmt            : An expression statement (printf(...);\)
+  BinaryOperator      : An operation with two operands (a + b, x = y)
+  CallExpr            : A function call (printf("hello"))
+  DeclRefExpr         : Reference to a declared identifier (x, y)
+  IntegerLiteral      : A literal integer value (5, 42, 100)
+  StringLiteral       : A literal string ("hello")
+  ReturnStmt          : A return statement (return 0;)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: AST EXAMPLE — SIMPLE C PROGRAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source Code:
+  int main() {
+      int x = 5;
+      return x;
+  }
+
+AST Representation:
+  TranslationUnit
+  └── FunctionDecl: main → returns int
+       └── CompoundStmt
+            ├── DeclStmt
+            │    └── VarDecl: x → type: int
+            │         └── IntegerLiteral: 5
+            └── ReturnStmt
+                 └── DeclRefExpr: x
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: ERROR-TO-CODE-CONTEXT MAPPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This section maps each GCC error to the AST construct it originates from.
+
+─────────────────────────────────────────────────────────
+Error E001: expected ';' before token
+─────────────────────────────────────────────────────────
+Code Construct : DeclStmt (variable declaration statement)
+                 OR ExprStmt (expression statement)
+AST Context    : Parser expects a StatementTerminator token (';')
+                 after each statement-level node
+Root Cause     : The DeclStmt or ExprStmt node is missing its
+                 terminating semicolon token
+What GCC sees  : It reached the next token (e.g., 'printf') before
+                 seeing ';', so it knows ';' was expected here
+
+─────────────────────────────────────────────────────────
+Error E002: 'y' undeclared (first use in this function)
+─────────────────────────────────────────────────────────
+Code Construct : DeclRefExpr (identifier reference expression)
+AST Context    : Symbol table lookup for identifier 'y' failed
+                 because 'y' does not appear in any enclosing scope
+Root Cause     : The DeclRefExpr node references an identifier 'y'
+                 that has no corresponding VarDecl in scope
+What GCC sees  : During semantic analysis, 'y' cannot be resolved
+                 in the current function scope or global scope
+
+─────────────────────────────────────────────────────────
+Error E003: incompatible types when assigning
+─────────────────────────────────────────────────────────
+Code Construct : BinaryOperator (assignment, '=')
+AST Context    : Type checker compares type of LHS (int) with
+                 type of RHS (char * — string literal)
+Root Cause     : BinaryOperator '=' has type mismatch between
+                 its left and right child nodes
+What GCC sees  : int ← char* assignment is not implicitly allowed
+
+─────────────────────────────────────────────────────────
+Error E004: implicit declaration of function 'printf'
+─────────────────────────────────────────────────────────
+Code Construct : CallExpr (function call expression)
+AST Context    : Parser resolves a CallExpr's function name by
+                 looking up a FunctionDecl in the symbol table
+Root Cause     : No FunctionDecl for 'printf' is visible because
+                 #include <stdio.h> was not included
+What GCC sees  : The CallExpr for 'printf' has no visible prototype
+
+─────────────────────────────────────────────────────────
+Error E010: return with a value, in function returning void
+─────────────────────────────────────────────────────────
+Code Construct : ReturnStmt inside FunctionDecl(void)
+AST Context    : Semantic analyzer checks that ReturnStmt value
+                 matches the FunctionDecl's declared return type
+Root Cause     : FunctionDecl type is 'void' but ReturnStmt
+                 contains an IntegerLiteral (42) as its value
+What GCC sees  : void return type cannot carry a return value
+
+─────────────────────────────────────────────────────────
+Error E011: format '%d' expects int but has double
+─────────────────────────────────────────────────────────
+Code Construct : CallExpr to printf(), argument type checking
+AST Context    : GCC analyzes the format string literal (StringLiteral)
+                 and checks it against the types of the variadic arguments
+Root Cause     : '%d' in format string maps to int, but argument
+                 is a DeclRefExpr with type double
+What GCC sees  : Argument type mismatch in variadic function call
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: CONTEXT MAPPING SUMMARY TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Error | Code Construct          | AST Node Type    | Compiler Stage
+------|-------------------------|------------------|------------------
+E001  | Statement end           | DeclStmt/ExprStmt| Parser
+E002  | Identifier use          | DeclRefExpr      | Semantic Analyzer
+E003  | Assignment              | BinaryOperator   | Type Checker
+E004  | Function call           | CallExpr         | Symbol Table
+E005  | Expression grouping     | ParenExpr        | Parser
+E006  | Function call args      | CallExpr         | Semantic Analyzer
+E009  | Variable declaration    | VarDecl          | Symbol Table
+E010  | Return statement        | ReturnStmt       | Semantic Analyzer
+E011  | printf argument         | CallExpr (vararg)| Format Checker
+E015  | Block end               | CompoundStmt     | Parser

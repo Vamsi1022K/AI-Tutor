@@ -1,0 +1,102 @@
+MODULE INTERACTION DESCRIPTION
+================================
+Project Title : AI-Based Compiler Error Message Rewriting (AI Tutor)
+Week          : 4
+Phase         : Phase 2 – Requirement Analysis and System Design
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 1: INPUT LAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role     : Entry point for the user
+Input    : sys.argv[1] — C source file path entered by user
+Processing:
+  - Checks if argument was provided; exits with usage message if not
+  - Checks if file exists on disk; exits with error if not found
+  - Checks file has .c extension (warning if not)
+Output   : Validated file path passed to Module 2
+Code Ref : rewriter.py → if __name__ == '__main__' block
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 2: GCC COMPILATION MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role     : Compiles the C file and captures GCC error output
+Input    : Validated file path from Module 1
+Processing:
+  - Runs: subprocess.run(['gcc', '-Wall', '-Wextra', filepath, '-o', 'NUL'])
+  - Captures both stdout and stderr  
+  - stderr contains the GCC error messages
+  - return code: 0 = success, non-zero = compilation failed
+Output   : Raw stderr string passed to Module 3
+  Example output:
+    err_001.c:5:13: error: expected ';' before 'printf'
+Code Ref : rewriter.py → compile_and_rewrite() function
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 3: ERROR PARSER MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role     : Converts raw GCC text into structured Python dictionaries
+Input    : Raw stderr string from Module 2
+Processing:
+  - Splits stderr into individual lines
+  - Applies regex pattern to each line:
+    r'^(?P<file>[^:]+):(?P<line>\d+):(?P<col>\d+):\s*(?P<type>error|warning|note):\s*(?P<msg>.+)$'
+  - Extracts: file name, line number, column number, error type, message
+  - Lines that don't match the pattern are skipped (continuation lines)
+Output   : List of dictionaries:
+  [{'file':'main.c', 'line':5, 'col':13, 'type':'error', 'msg':'expected...', 'raw':'...'}]
+Code Ref : rewriter.py → parse_gcc_output() function
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 4: AI REWRITING MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role     : Matches each error to a dataset entry and returns explanation
+Input    : List of error dictionaries from Module 3
+Processing:
+  - For each error dict, extract the 'msg' field
+  - Apply pattern matching using compiled regex patterns:
+    e.g. r"expected\s*';'" → matches E001 (missing semicolon)
+  - Look up matched ID in annotated_errors.json dataset
+  - Return plain_explanation field from dataset entry
+  - If no pattern matches: return generic fallback explanation
+Output   : Dictionary containing: original error, explanation, fix, secure flag
+Code Ref : rewriter.py → find_matching_entry() and rewrite_error() functions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 5: SECURE FIX RECOMMENDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role     : Provides validated, safe fix suggestions
+Input    : Matched dataset entry from Module 4
+Processing:
+  - Reads 'fix' field from dataset entry
+  - Validates 'secure' flag is True (manually pre-verified)
+  - If secure=False (should never happen with current dataset), 
+    returns a warning message instead of the fix
+Output   : Fix string + secure boolean flag
+Code Ref : Embedded in rewrite_error() function in rewriter.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE 6: OUTPUT FORMATTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Role     : Displays the final, human-readable rewritten error messages
+Input    : List of rewritten error result dictionaries
+Processing:
+  - Prints header with total issue count
+  - For each error:
+      Issue number, category, file+line
+      Original GCC error (marked with red X)  
+      Plain English explanation (marked with light bulb)
+      Fix suggestion (marked with wrench)
+      Secure status (marked with lock)
+Output   : Formatted terminal output
+Code Ref : rewriter.py → print_results() function
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MODULE INTERACTION SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Module 1 → Module 2 : file path (string)
+Module 2 → Module 3 : raw GCC stderr (multiline string)
+Module 3 → Module 4 : list of error dicts
+Module 4 → Module 5 : matched dataset entry (dict)
+Module 5 → Module 6 : rewritten error result (dict)
+Module 6 → Terminal  : formatted output (print statements)
+Dataset  → Module 4  : annotated_errors.json (JSON file read at startup)
