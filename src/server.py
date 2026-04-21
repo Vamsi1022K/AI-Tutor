@@ -236,30 +236,51 @@ def warning_fallback(msg):
             return expl, fix
     return None, None
 
-def compile_code(code_text):
-    with tempfile.NamedTemporaryFile(suffix='.c', mode='w',
+def compile_code(code_text, language="c"):
+    ext = ".c" if language == "c" else ".cpp" if language == "cpp" else ".py"
+    with tempfile.NamedTemporaryFile(suffix=ext, mode='w',
                                      encoding='utf-8', delete=False) as f:
         f.write(code_text)
         tmp = f.name
     try:
-        r = subprocess.run(
-            ['gcc', '-Wall', '-Wextra', '-fsyntax-only', tmp],
-            capture_output=True, text=True, errors='replace'
-        )
-        stderr_str = r.stderr if r.stderr is not None else ""
-        stderr = stderr_str.replace(tmp, 'code.c')
-        errors = []
-        for line in stderr.splitlines():
-            m = GCC_RE.match(line.strip())
-            if m:
-                errors.append({
-                    'line': int(m.group(2)),
-                    'col':  int(m.group(3)),
-                    'type': m.group(4),
-                    'msg':  m.group(5).strip(),
-                    'raw':  line.replace(tmp, 'code.c').strip()
-                })
-        return stderr, errors
+        if language == "python":
+             r = subprocess.run(
+                 ['py', '-3.12', '-m', 'py_compile', tmp],
+                 capture_output=True, text=True, errors='replace'
+             )
+             stderr = (r.stderr if r.stderr else r.stdout).replace(tmp, 'code.py')
+             errors = []
+             err_line = 1
+             for line in stderr.splitlines():
+                 line_m = re.search(r'line (\d+)', line)
+                 if line_m: err_line = int(line_m.group(1))
+                 if "Error:" in line or "Exception:" in line:
+                     errors.append({
+                         'line': err_line, 'col': 1, 'type': 'error', 'msg': line.strip(), 'raw': line.strip()
+                     })
+             if not errors and r.returncode != 0:
+                 errors.append({'line': 1, 'col': 1, 'type': 'error', 'msg': "Syntax Error in Python script", 'raw': stderr.strip()})
+             return stderr, errors
+        else:
+            compiler = "g++" if language == "cpp" else "gcc"
+            r = subprocess.run(
+                [compiler, '-Wall', '-Wextra', '-fsyntax-only', tmp],
+                capture_output=True, text=True, errors='replace'
+            )
+            stderr_str = r.stderr if r.stderr is not None else ""
+            stderr = stderr_str.replace(tmp, f'code{ext}')
+            errors = []
+            for line in stderr.splitlines():
+                m = GCC_RE.match(line.strip())
+                if m:
+                    errors.append({
+                        'line': int(m.group(2)),
+                        'col':  int(m.group(3)),
+                        'type': m.group(4),
+                        'msg':  m.group(5).strip(),
+                        'raw':  line.replace(tmp, f'code{ext}').strip()
+                    })
+            return stderr, errors
     finally:
         os.unlink(tmp)
 
@@ -490,12 +511,14 @@ def analyze_all():
     profiler = EnergyProfiler()
     data = request.json or {}
     code = data.get('code', '')
+    language = data.get('language', 'c').lower()
+    
     if not code.strip():
         return jsonify({'error': 'No code provided'}), 400
 
-    # ── 1. GCC compile ────────────────────────────────────────
+    # ── 1. Compile ────────────────────────────────────────
     with profiler.stage("Compile + Parse"):
-        stderr, raw_errors = compile_code(code)
+        stderr, raw_errors = compile_code(code, language=language)
         errors = [build_error_result(e) for e in raw_errors]
 
     # ── 2. Static checks (run on source, not on GCC output) ──
@@ -531,35 +554,59 @@ def analyze_all():
     # ── 3. Security scan ─────────────────────────────────────
     with profiler.stage("Security Scan"):
         sec_issues = []
+        unsafe_patterns = {
+            "c": {
+                r"\bgets\s*\(": ("The function 'gets()' is dangerous.", "Use 'fgets(buf, sizeof(buf), stdin)'"),
+                r"\bstrcpy\s*\(": ("'strcpy()' can lead to buffer overflows.", "Use 'strncpy()'"),
+                r"\bsprintf\s*\(": ("'sprintf()' is unsafe.", "Use 'snprintf()'"),
+                r"system\s*\(": ("'system()' exposes command injection.", "Use 'exec' family"),
+                r"\bmalloc\s*\(": ("'malloc()' unchecked NULL return", "if(!ptr){ exit(1); }"),
+                r"\bfree\s*\(": ("'free()' double-free risk", "ptr = NULL;"),
+            },
+            "cpp": {
+                r"\bgets\s*\(": ("'gets()' is extremely dangerous.", "Use 'std::cin.getline()' or 'std::getline()'"),
+                r"system\s*\(": ("Calling 'system()' in C++ is unsafe.", "Use safer process invocation"),
+                r"catch\s*\(\s*\.\.\.\s*\)": ("'catch(...)' hides serious bugs.", "Catch specific exceptions.")
+            },
+            "python": {
+                r"\beval\s*\(": ("'eval()' evaluates user input unsafely.", "Use 'ast.literal_eval()'"),
+                r"\bexec\s*\(": ("'exec()' executes arbitrary code.", "Avoid it entirely."),
+                r"except\s+Exception\s*:": ("Catching general 'Exception' hides bugs.", "Catch specific exceptions like ValueError.")
+            }
+        }
+        
+        rules = unsafe_patterns.get(language, unsafe_patterns["c"])
+        
         for lineno, line in enumerate(code.splitlines(), 1):
             stripped = line.strip()
-            if stripped.startswith('//') or stripped.startswith('*'):
+            if stripped.startswith('//') or stripped.startswith('*') or stripped.startswith('# '):
                 continue
-            for pat, reason, fix in SEC_RULES:
-                if pat.search(line):
+            for pat, (reason, fix) in rules.items():
+                if re.search(pat, line):
                     sec_issues.append({'line': lineno, 'code': stripped[:100],
                                        'reason': reason, 'fix': fix})
 
     # ── 4. AST parse ─────────────────────────────────────────
     with profiler.stage("AST Build"):
         AST_RULES = [
-            ("IncludeDirective",    r'^\s*#include'),
-            ("FunctionDecl",        r'^\s*(int|void|char|float|double)\s+\w+\s*\('),
+            ("IncludeDirective",    r'^\s*#(include|import)'),
+            ("FunctionDecl",        r'^\s*(int|void|char|float|double|def)\s+\w+\s*\('),
             ("VarDecl",             r'^\s*(int|float|double|char|long)\s+\w+'),
             ("ReturnStmt",          r'^\s*return\b'),
-            ("IfStmt",              r'^\s*if\s*\('),
-            ("ForStmt",             r'^\s*for\s*\('),
-            ("WhileStmt",           r'^\s*while\s*\('),
-            ("CallExpr[printf]",    r'^\s*printf\s*\('),
-            ("CallExpr[scanf]",     r'^\s*scanf\s*\('),
-            ("CallExpr",            r'^\s*\w+\s*\([^)]*\)\s*;'),
-            ("BinaryOp[assign]",    r'^\s*\w+\s*=\s*.+;'),
+            ("IfStmt",              r'^\s*if([\s\(]|$)'),
+            ("ForStmt",             r'^\s*for([\s\(]|$)'),
+            ("WhileStmt",           r'^\s*while([\s\(]|$)'),
+            ("CallExpr[printf]",    r'^\s*(printf|print)\s*\('),
+            ("CallExpr[scanf]",     r'^\s*(scanf|input)\s*\('),
+            ("CallExpr",            r'^\s*\w+\s*\([^)]*\)\s*;?'),
+            ("BinaryOp[assign]",    r'^\s*\w+\s*=[^=].*'),
             ("CompoundStmt[open]",  r'^\s*\{'),
             ("CompoundStmt[close]", r'^\s*\}'),
         ]
         compiled_ast = [(name, re.compile(pat)) for name, pat in AST_RULES]
         ast_nodes = []
         for lineno, line in enumerate(code.splitlines(), 1):
+            if not line.strip(): continue
             node = "Stmt/Expr"
             for name, pat in compiled_ast:
                 if pat.search(line):

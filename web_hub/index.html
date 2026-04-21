@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Compiler Tutor Hub</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="hub-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <h2>AI Tutor Hub</h2>
+                <p>Unified Workspace</p>
+            </div>
+            
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="switchFrame('vamsi', this)" title="Open Vamsi's Engine">
+                    <div class="nav-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                    <div class="nav-text">
+                        <span class="nav-title">Vamsi's Engine</span>
+                        <span class="nav-status"><i class="fa-solid fa-circle text-green"></i> Port 5000</span>
+                    </div>
+                </button>
+                
+                <button class="nav-btn" onclick="switchFrame('friend', this)" title="Open Friend's Engine">
+                    <div class="nav-icon"><i class="fa-solid fa-microchip"></i></div>
+                    <div class="nav-text">
+                        <span class="nav-title">Friend's Engine</span>
+                        <span class="nav-status"><i class="fa-solid fa-circle text-green"></i> Port 5173</span>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <div class="pulse-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h1 id="engine-title">Vamsi's AI Tutor Engine</h1>
+                <div class="top-actions">
+                    <button class="action-btn" onclick="openNewTab()" title="Open in new tab"><i class="fa-solid fa-external-link-alt"></i></button>
+                    <button class="action-btn" onclick="refreshFrame()" title="Refresh frame"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+            
+            <div class="iframe-container">
+                <!-- Iframes -->
+                <iframe id="iframe-vamsi" src="http://localhost:5000" class="active" frameborder="0"></iframe>
+                <iframe id="iframe-friend" src="http://localhost:5173" frameborder="0"></iframe>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const iframes = {
+            vamsi: { el: document.getElementById('iframe-vamsi'), url: 'http://localhost:5000', title: "Vamsi's AI Tutor Engine" },
+            friend: { el: document.getElementById('iframe-friend'), url: 'http://localhost:5173', title: "Friend's AI Tutor Engine" }
+        };
+        let currentEngine = 'vamsi';
+
+        function switchFrame(engine, btnElement) {
+            // Update buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            // Update iframes
+            Object.keys(iframes).forEach(key => {
+                iframes[key].el.classList.remove('active');
+            });
+            iframes[engine].el.classList.add('active');
+
+            // Update title
+            document.getElementById('engine-title').textContent = iframes[engine].title;
+            currentEngine = engine;
+        }
+
+        function refreshFrame() {
+            iframes[currentEngine].el.src = iframes[currentEngine].url;
+        }
+        
+        function openNewTab() {
+            window.open(iframes[currentEngine].url, '_blank');
+        }
+    </script>
+</body>
+</html>

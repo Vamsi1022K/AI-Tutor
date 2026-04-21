@@ -7,3 +7,6 @@ __pycache__/
 tmp/
 models/
 raw_gcc_output.json
+
+friends_project/
+vamsi_project_backup.zip

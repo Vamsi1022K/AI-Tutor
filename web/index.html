@@ -574,7 +574,14 @@ header {
       <div class="ef-item">Lines: <span id="efLines">0</span></div>
       <div class="ef-item">Errors: <span id="efErrors" style="color:var(--red)">–</span></div>
       <div class="ef-item">Security: <span id="efSec" style="color:var(--yellow)">–</span></div>
-      <div class="ef-item" style="margin-left:auto">Language: <span>C</span></div>
+      <div class="ef-item" style="margin-left:auto">
+        <label for="langSelect" style="font-weight: 500;">Language:</label>
+        <select id="langSelect" style="border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; background: #fff; font-family: 'Inter', sans-serif; font-size: 11px; margin-left: 6px; outline: none; outline-color: var(--blue);">
+          <option value="c">C</option>
+          <option value="cpp">C++</option>
+          <option value="python">Python</option>
+        </select>
+      </div>
     </div>
 
   </div>
@@ -859,10 +866,11 @@ async function runAll() {
   }, 600);
 
   try {
+    const lang = document.getElementById('langSelect').value;
     const r = await fetch('/api/analyze_all', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code: code, language: lang }),
     });
     const d = await r.json();
     lastResult = d;
